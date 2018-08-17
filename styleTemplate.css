@@ -1,0 +1,578 @@
+/*
+   CSS Style for Bleek and Lloyd Collection
+   hussein suleman
+   30 march 2007
+*/
+
+
+/* global default */
+
+body {
+    font: 10pt serif;
+    background-color: #ded7cd;
+}
+
+
+/* menu styles */
+
+.header {
+    font: 100% Times, serif;
+    color: #aa4444;
+    background-color: #ffffff;
+    padding: 3pt;
+    border: solid #c74716;
+    display: block;
+    margin: 5pt;
+    width: 130pt;
+    position: fixed;
+    top: 0;
+    left: 0;
+    text-align: center;
+    overflow: hidden;
+}
+
+.header h1 {
+    font: 135% Times, serif;
+    font-weight: bold;
+    color: #fcaa53;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 4pt;
+    display: block;
+}
+
+.header .menu {
+    margin: 3pt;
+    display: block;
+}
+
+.header .menu p {
+    font: 110% Times, serif;
+    color: black;
+    font-weight: bold;
+    margin-right: 5pt;
+    display: block;
+    line-height: 15pt;
+}
+
+.header .menu p a {
+    font: 100% Times, serif;
+    font-weight: normal;
+    color: #c74716;
+    display: block;
+    text-decoration: none;
+}
+
+.header .menu p a:hover {
+    background-color: #ded7cd;
+}
+
+.header .menu p form input {
+    display: block;
+    text-align: center;
+}
+
+
+/* content pane header styles */
+
+.heading {
+    background-color: #d3cac3;
+    display: block;
+    padding: 2pt;
+    margin-bottom: 5pt;
+}
+
+.heading h1 {
+    font: 150% Times, serif;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+    border: 0;
+    margin: 0;
+    padding: 4pt;
+}
+
+.heading h2 {
+    font: 120% Times, serif;
+    font-weight: bold;
+    color: white;
+    text-transform: none;
+    margin-top: 0;
+    padding-left: 4pt;
+}
+
+
+/* content pane styles */
+
+.content {
+    display: block;
+    position: absolute;
+    top: 10pt;
+    left: 160pt;
+    right: 0;
+    margin-right: 5pt;
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 3pt;
+}
+
+ul li h3 {
+    font: 120% Times, serif;
+    font-weight: bold;
+    color: #b80000;
+    margin-bottom: 3pt;
+    padding-top: 3pt;
+}
+
+ul li ul {
+    padding-left: 0pt;
+    margin-left: 10pt;
+    padding-bottom: 3pt;
+}
+
+.thumb {
+    display: block;
+    float: left;
+    border: 0px solid;
+    padding: 5pt;
+    margin: 5pt;
+    width: 150;
+    height: 200;
+    background-color: #dddddd;
+    text-align: center;
+    font-style:normal; font-variant:normal; font-weight:normal; font-size:8pt; font-family:serif;
+    overflow: hidden;
+}
+
+.thumb a {
+    text-decoration: none;
+}
+
+.thumb a img {
+    border: 0px none;
+    vertical-align: text-top;
+}
+
+.thumb p {
+    text-align: left;
+}
+
+.links {
+    text-align: center;
+    display: block;
+    margin: auto;
+}
+
+.jump {
+    display: block;
+    border: 1pt;
+    border-style: solid;
+    padding: 2pt;
+}
+
+.left {
+    border: 1pt;
+    border-style: solid;
+    display: block;
+    float: left;
+    text-align: left;
+    margin: 0;
+    padding: 2pt 5pt 2pt 5pt;
+}
+
+.dleft {
+    border: 1pt;
+    border-style: solid;
+    display: block;
+    text-align: left;
+    margin: 0;
+    padding: 2pt 5pt 2pt 5pt;
+}
+
+.right {
+    border: 1pt;
+    border-style: solid;
+    display: block;
+    float: right;
+    text-align: right;
+    margin: 0;
+    padding: 2pt 5pt 2pt 5pt;
+}
+
+.image img {
+    width: 100%;
+    border: 0;
+}
+
+p.story {
+    margin-left: 15pt;
+}
+
+
+/* front page styles */
+
+.indexleft {
+    font: 9pt Times, serif;
+    text-align: left;
+    float: left;
+    display: block;
+    width: 38%;
+    margin: 0;
+}
+
+.indexfull {
+    display: block;
+    margin: 5%;
+}
+
+.indexright {
+    display: block;
+    position: absolute;
+    left: 41%;
+    width: 57%;
+    margin: 0;
+}
+
+.indexright1 {
+    font: 140% Times, serif;
+    color: #b80000;
+    text-align: center;
+    font-weight: bold;
+    display: block;
+    text-transform: uppercase;
+    padding-bottom: 15pt;
+}
+
+.indexright1 b {
+    font: 130% Times, serif;
+    font-weight: bold;
+}
+
+.indexright2 {
+    font: 170% Times, serif;
+    color: #b80000;
+    text-align: center;
+    font-weight: bold;
+    display: block;
+    text-transform: uppercase;
+}
+
+.indexright3 {
+    display: block;
+    margin-top: 15pt;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.indexright3 p {
+    font: 100% Times, serif;
+    color: #530000;
+    text-align: left;
+    font-weight: bold;
+    display: inline;
+    text-transform: uppercase;
+}
+
+.indexright3 img {
+    width: 10%;
+    max-width: 133px;
+    vertical-align: text-bottom;
+    border: 0px none;
+}
+
+.indexright3 .hide {
+    color: #d3d7cd;
+    font: 400% Times, serif;
+}
+
+.indexright4 {
+    text-align: center;
+    border: solid green;
+    display: block;
+}
+
+.indeximage {
+    text-align: center;
+    display: block;
+    padding-top: 0pt;
+    padding-bottom: 20pt;
+}
+
+.indeximage img {
+    width: 55%;
+    max-width: 400;
+    max-height: 482;
+}
+
+
+/* page 2 styles */
+
+body.menu {
+    font: 10pt serif;
+    background-color: #ded7cd;
+    margin-right: 0;
+}
+
+.menufull {
+    display: block;
+    width: 100%;
+}
+
+.menutop {
+    margin-top: 15pt;
+    margin-left: 15%;
+    margin-right: 15%;
+    width: 70%;
+}
+
+.menutop img {
+    text-align: center;
+    width: 100%;
+}
+
+.menutop .heading {
+    height: 30pt;
+    background-color: #ded7cd;
+}
+
+.menutop h1 {
+    font: 22pt Palatino, Times, serif;
+    color: #b80000;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: 0;
+}
+
+.menutop h1 a {
+    font: 22pt Palatino, Times, serif;
+    color: #b80000;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: 0;
+    text-decoration: none;
+}
+
+.menutop h1.aleft {
+    float: left;
+}
+
+.menutop h1.aright {
+    float: right;
+}
+
+.menutop p {
+    font: 9pt Verdana, Arial, sans-serif;
+    text-align: left;
+    display: block;
+}
+
+.menutop p a, .menuindexfull p a {
+    text-decoration: none;
+}
+
+.menutop .menuks {
+    font: 130% Times, serif;
+    color: #b80000;
+    text-align: center;
+    font-weight: bold;
+}
+
+.menutop .menuks p {
+    font: 100% Palatino, Times, serif;
+    display: inline;
+    margin-left: 3pt;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.menubottom {
+    display: block;
+    background-image: url(menu_back2.gif);
+    margin-top: 25pt;
+    padding-bottom: 10pt;
+    padding-left: 10pt;
+    margin-left: 15%;
+    margin-right: 15%;
+}
+
+.menubottomleft {
+    font: 100% Palatino, Times, serif;
+    color: #ffffff;
+    display: inline-block;
+    vertical-align: top;
+    text-align: left;
+    width: 22%;
+}
+* html .menubottomleft { display:inline; }  /* for IE 6 */
+* + html .menubottomleft { display:inline; }  /* for IE 7 */
+
+.menubottomleft h2 {
+    color: #ffffff;
+    margin-bottom: 5pt;
+    font: 120% Palatino, Times, serif;
+    font-weight: bold;
+}
+
+.menubottomleft a {
+    font: 100% Palatino, Times, serif;
+    color: #c74716;
+    text-decoration: none;
+    margin-left: 5pt;
+}
+
+.menubottomleft a:hover {
+    background-color: #ded7cd;
+}
+
+.menubottomleft img {
+    width: 150px;
+}
+
+.menubottomright {
+    font: 100% Palatino, Times, serif;
+    color: #c74716;
+    display: inline-block;
+    vertical-align: top;
+    text-align: left;
+    width: 22%;
+    padding-left: 15pt;
+}
+* html .menubottomright { display:inline; }  /* for IE 6 */
+* + html .menubottomright { display:inline; }  /* for IE 7 */
+
+.menubottomright h2 {
+    color: #c74716;;
+    margin-bottom: 5pt;
+    font: 120% Palatino, Times, serif;
+    font-weight: bold;
+}
+
+.menubottomright a {
+    font: 100% Palatino, Times, serif;
+    color: #ffffff;
+    text-decoration: none;
+    margin-left: 5pt;
+}
+
+.menubottomright a:hover {
+    background-color: #ded7cd;
+}
+
+.menubottomright img {
+    width: 150px;
+}
+
+.menubottomright2 {
+    font: 100% Palatino, Times, serif;
+    color: #ffffff;
+    display: inline-block;
+    vertical-align: top;
+    text-align: left;
+    width: 22%;
+    padding-left: 15pt;
+}
+* html .menubottomright2 { display:inline; }  /* for IE 6 */
+* + html .menubottomright2 { display:inline; }  /* for IE 7 */
+
+.menubottomright2 h2 {
+    color: #ffffff;
+    margin-bottom: 5pt;
+    font: 120% Palatino, Times, serif;
+    font-weight: bold;
+}
+
+.menubottomright2 a {
+    font: 100% Palatino, Times, serif;
+    color: #c74716;
+    text-decoration: none;
+    margin-left: 5pt;
+}
+
+.menubottomright2 a:hover {
+    background-color: #ded7cd;
+}
+
+.menubottomright2 img {
+    width: 150px;
+    padding-bottom: 13px;
+}
+
+.menubottomright3 {
+    font: 100% Palatino, Times, serif;
+    color: #c74716;
+    display: inline-block;
+    vertical-align: top;
+    text-align: left;
+    width: 22%;
+    padding-left: 15pt;
+}
+* html .menubottomright3 { display:inline; }  /* for IE 6 */
+* + html .menubottomright3 { display:inline; }  /* for IE 7 */
+
+.menubottomright3 h2 {
+    color: #c74716;
+    margin-bottom: 5pt;
+    font: 120% Palatino, Times, serif;
+    font-weight: bold;
+}
+
+.menubottomright3 a {
+    font: 100% Palatino, Times, serif;
+    color: #ffffff;
+    text-decoration: none;
+    margin-left: 5pt;
+}
+
+.menubottomright3 a:hover {
+    background-color: #ded7cd;
+}
+
+.menubottomright3 img {
+    height: 150px;
+}
+
+.menuindexfull {
+    display: block;
+    width: 70%;
+    margin-left: 15%;
+    margin-right: 15%;
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.menuindexfull p {
+    font: 9pt Verdana, Arial, sans-serif;
+    text-align: left;
+    display: block;
+}
+
+.menuindexfull .footer {
+    margin-top: 40px;
+    height: 80px;
+}
+
+.menuindexfull .footer .imgleft {
+    float: left;
+}
+
+.menuindexfull .footer .imgright {
+    float: right;
+}
+
+
+/* contributor styles */
+
+.contrib td {
+    padding: 10pt;
+    margin: 10pt;
+    border: 1px solid #888888;
+    vertical-align: top;
+}
+
+.contrib img {
+    vertical-align: top;
+}
