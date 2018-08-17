@@ -1,0 +1,22 @@
+body{
+    background-color: blue;
+    z-index: -1;
+}
+
+.container{
+    background-color: beige;
+    z-index: 1;
+    align-content: center;
+}
+
+.nav{
+    text-align: center;
+}
+legend{
+    text-align: center;
+}
+
+.thediv{
+    text-align: center;
+}
+

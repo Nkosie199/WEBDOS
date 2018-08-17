@@ -2,12 +2,17 @@ package com.sitegenerator;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class to create html pages from directory objects using a template
@@ -28,12 +33,16 @@ public class PageCreator {
     public static final String THUMBNAIL_FOLDER="thumbs";
 
     private String siteDirectoryString;
+    private Path sitePagesFolderPath;
     private String workingDirectory;
     private StringBuffer templateBuffer;
 
     PageCreator(String siteDirectory){
         this.siteDirectoryString =siteDirectory;
+        this.createSiteFolder();
         getTemplate();
+        this.writeStyleSheet();
+        
     }
 
     /**
@@ -42,18 +51,38 @@ public class PageCreator {
     private void getTemplate(){
         templateBuffer=new StringBuffer();
 
-        Path path= Paths.get(System.getProperty("user.dir"),"template.html");
-        workingDirectory=path.getParent().toString();
+        Path path= Paths.get("template.html");
+        workingDirectory=Paths.get(System.getProperty("user.dir")).toString();//path.getParent().toString();
 
         try {
-            Scanner scanner=new Scanner(Files.newInputStream(path));
+            Scanner scanner=new Scanner(getClass().getResourceAsStream("template.html"));
             while (scanner.hasNextLine()){
                 templateBuffer.append(scanner.nextLine()).append("\n");
+              
             }
             scanner.close();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    private void writeStyleSheet(){
+        Path src=Paths.get(this.getClass().getResource("styleTemplate.css").getPath());
+        Path dest=this.sitePagesFolderPath.resolve("styleTemplate.css");
+        
+        try {
+            InputStream input=getClass().getResourceAsStream("styleTemplate.css");
+            PrintStream output=new PrintStream(Files.newOutputStream(dest));
+            Scanner scanner=new Scanner(input);
+            while(scanner.hasNextLine()){
+                output.println(scanner.nextLine());
+            }
+            scanner.close();
+            output.close();
+            //Files.copy(src, dest,StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            Logger.getLogger(PageCreator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -69,7 +98,7 @@ public class PageCreator {
         htmlPageString=htmlPageString
                 .replace(TITLE,directory.getName())
                 .replace(PAGE_HEADING,directory.getName())
-                .replace(STYLE_SHEET,workingDirectory+"/styleTemplate.css");
+                .replace(STYLE_SHEET,siteDirectoryString+"/"+SITE_FOLDER+"/styleTemplate.css");
 
         htmlPageString=addMenu(directories,htmlPageString);
         htmlPageString=addContent(directory,htmlPageString);
@@ -113,7 +142,7 @@ public class PageCreator {
         for(Content content:directory.getContentList()){
             builder.append("\n<div class=\"thumb\">")
                     .append("<a href=\"").append(content.getPath().toString()).append("\">")
-                    .append("<img src=").append(siteDirectoryString).append("thumbs/")
+                    .append("<img src=").append(siteDirectoryString).append("/thumbs/")
                     .append(thumbnailName(content.getName()))
                     .append(">").append("</a>")
                     .append("<p>").append(content.getName())
@@ -155,6 +184,14 @@ public class PageCreator {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    private void createSiteFolder(){
+            String separator= File.separator;
+            File file=new File(siteDirectoryString+separator+SITE_FOLDER
+                    +separator);
+            file.mkdirs();
+            this.sitePagesFolderPath=Paths.get(file.getPath());
     }
 
 
