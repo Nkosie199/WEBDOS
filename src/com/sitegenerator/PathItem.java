@@ -14,6 +14,7 @@ public class PathItem {
     PathItem(Path path){
         this.path=path;
         name=path.getFileName().toString();
+       
     }
 
     /**
