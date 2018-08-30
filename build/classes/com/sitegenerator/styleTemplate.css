@@ -1,7 +1,8 @@
 /*
    CSS Style for Bleek and Lloyd Collection
    hussein suleman
-   30 march 2007
+   modified by Brian Ngilazi for Capstone Project
+   17/08/2018
 */
 
 
@@ -9,7 +10,7 @@
 
 body {
     font: 10pt serif;
-    background-color: #ded7cd;
+    background-color:#cddedd;
 }
 
 
@@ -20,7 +21,7 @@ body {
     color: #aa4444;
     background-color: #ffffff;
     padding: 3pt;
-    border: solid #c74716;
+    border: solid #3916c7;
     display: block;
     margin: 5pt;
     width: 130pt;
@@ -34,7 +35,7 @@ body {
 .header h1 {
     font: 135% Times, serif;
     font-weight: bold;
-    color: #fcaa53;
+    color: #5355fc;
     text-transform: uppercase;
     margin: 0;
     padding: 4pt;
@@ -58,7 +59,7 @@ body {
 .header .menu p a {
     font: 100% Times, serif;
     font-weight: normal;
-    color: #c74716;
+    color: #2a16c7;
     display: block;
     text-decoration: none;
 }

@@ -1,14 +1,12 @@
 package com.sitegenerator;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -30,8 +28,8 @@ public class PageCreator {
     private static final String PAGE_HEADING="$pageHeading";
     private static final String STYLE_SHEET="$stylesheet";
 
-    public static final String SITE_FOLDER="MyStaticSite";
-    public static final String THUMBNAIL_FOLDER="thumbs";
+    static final String SITE_FOLDER="MyStaticSite";
+    static final String THUMBNAIL_FOLDER="thumbs";
 
     private String siteDirectoryString;
     private Path sitePagesFolderPath;
@@ -39,15 +37,15 @@ public class PageCreator {
     private StringBuffer templateBuffer;
     private List<Directory> directories;
 
-    PageCreator(String siteDirectory){
+    private HTMLItem htmlItem;
+
+    private PageCreator(String siteDirectory){
         this.siteDirectoryString =siteDirectory;
         directories=new ArrayList<>();
         this.createSiteFolder();
         getTemplate();
         this.writeStyleSheet();
-        
-        
-        
+        htmlItem=new HTMLItem();
     }
 
     PageCreator(String path, List<Directory> directories) {
@@ -91,7 +89,6 @@ public class PageCreator {
             }
             scanner.close();
             output.close();
-            //Files.copy(src, dest,StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
             Logger.getLogger(PageCreator.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -110,16 +107,13 @@ public class PageCreator {
     }
     
     private String addHomePageContent(String htmlString){
-         StringBuilder builder=new StringBuilder();
-         builder.append("<p>")
-                 .append("This is your static site home page.")
-                 .append(" Select an item on the menu to navigate to a page")
-                 .append("<p>");
-               
-           return htmlString.replace(this.BODY,builder.toString());
+        String builder = htmlItem.paragraph("This is your static site home page.",
+                " Select an item on the menu to navigate to a page");
+
+        return htmlString.replace(BODY, builder);
     }
     
-     public void createPages(){
+     void createPages(){
         for(Directory dir:directories){
             this.createPageFromDirectory(dir);
         }
@@ -129,9 +123,8 @@ public class PageCreator {
     /**
      *
      * @param directory the directory from which a page will be created
-     * @param directories the list of directories used primarily to generate a menu for navigation
      */
-    void createPageFromDirectory(Directory directory){
+    private void createPageFromDirectory(Directory directory){
        
         String htmlPageString=templateBuffer.toString();
         htmlPageString=htmlPageString
@@ -158,13 +151,7 @@ public class PageCreator {
     private String addMenu(List<Directory> directories, String htmlString){
         StringBuilder builder=new StringBuilder();
         for (Directory dir:directories){
-            builder.append("\n<p>")
-                    .append("<a href=\"")
-                    .append(dir.getName()).append(".html\"")
-                    .append(">")
-                    .append(dir.getName())
-                    .append("</a>")
-                    .append("</p>");
+            builder.append(htmlItem.navigationMenuItem(dir.getName()+".html",dir.getName()));
         }
 
         return htmlString.replace(MENU,builder.toString());
@@ -180,21 +167,18 @@ public class PageCreator {
         StringBuilder builder=new StringBuilder();
         for(Content content:directory.getContentList()){
             String thumbString=String.format("%s/%s/%s",this.siteDirectoryString,
-                    this.THUMBNAIL_FOLDER,thumbnailName(content.getName()));
+                    THUMBNAIL_FOLDER,thumbnailName(content.getName()));
             Path thumbPath=Paths.get(thumbString);
             if(!Files.exists(thumbPath)){
                 thumbString=thumbString.replace(thumbnailName(content.getName()),"default.jpg");
             }
-            builder.append("\n<div class=\"thumb\">")
-                    .append("<a href=\"").append(content.getPath().toString()).append("\">")
-                    .append("<img src=")
-                    .append(thumbString)
-                    .append(">").append("</a>")
-                    .append("<p>").append(content.getName())
-                    .append("</p>")
-                    .append("</div>");
+            builder.append(htmlItem.thumbnail(thumbString,
+                    content.getName(),
+                    content.getPath().toString()));
+
         }
         return htmlString.replace(BODY,builder.toString());
+
     }
 
     private String thumbnailName(String contentName){
@@ -249,7 +233,7 @@ public class PageCreator {
         return this.sitePagesFolderPath;
     }
     
-    public Path homePagePath(){
+    Path homePagePath(){
         return this.sitePagesFolderPath.resolve("index.html");
     }
     

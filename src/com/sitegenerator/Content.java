@@ -9,8 +9,8 @@ import java.util.Map;
  * @version 1.0
  * @since 2018/08/15
  */
-public class Content extends PathItem {
-    Map<String,String> metadata;
+class Content extends PathItem {
+    private Map<String,String> metadata;
 
 
     Content(Path path){
