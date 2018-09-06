@@ -1,23 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="$stylesheet">
-    <title>$title</title>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="$stylesheet">
+        <!-- <link rel="stylesheet" href="./dynamic.css"> -->
+        <title>$title</title>
 
-</head>
-<body>
-    <div class="header">
-        <h1>Navigation</h1>
-        <div class="menu">
-            $menu
+    </head>
+    <body>
+        <div class="header">
+            <h1>Navigation</h1>
+            <div class="menu">
+                $menu
+            </div>
         </div>
-    </div>
-    <div class="content">
-        <div class="heading">
-            <h1>$pageHeading</h1>
-            $body
+        <div id="streammenu">
+            <div class="streamtabs">
+                <button id="4style_settings" class="streamtablinks" onclick="dropEvent(event, 'style_settings')">Styling</button>
+                <button id="4close" class="streamtablinks" onclick="dropEvent(event, 'close')">X</button>
+            </div>
         </div>
-    </div>
-</body>
+        <div id="top_slideout">
+            <div id="top_slideout_inner">
+                <div id="style_settings" class="streamtabcontent">
+                    <div class="container grid">
+                        <form>
+                            <h2>HTML</h2>
+                            <textarea id="edithtml"></textarea>
+
+                            <h2>CSS</h2>
+                            <textarea id="editcss"></textarea>
+                        </form>
+                    </div>
+                    <div class="output grid">
+                        <iframe></iframe>
+                    </div>
+                </div>
+                <div id="close" class="streamtabcontent">
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="heading">
+                <h1>$pageHeading</h1>
+                $body
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+       
+        <script>
+            //for settings dropdowns
+            function dropEvent(evt, functionName) {
+                var i, tabcontent, tablinks;
+                tabcontent = document.getElementsByClassName("streamtabcontent");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+                tablinks = document.getElementsByClassName("streamtablinks");
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+                document.getElementById(functionName).style.display = "block";
+                evt.currentTarget.className += " active";
+            }
+            
+            (function () {
+                var mycontent = document.getElementsByClassName('content'); //get the message line
+                //console.log('child element class: ' + mycontent);
+                for (var i = 0; i < mycontent.length; i++) {
+                    var currentid = mycontent[i];
+                    var outerhtml = currentid.outerHTML;
+                    //console.log('html: '+outerhtml);
+                }
+                document.getElementById("edithtml").value = outerhtml; // add content to html textarea
+               
+                var doc = $(this.document),
+                    contents2 = doc.contents(),
+                    body2 = contents2.find('.content'),
+                    docStyleTag = contents2
+                            .find('head')
+                            .append('<style>!important</style>')
+                            .children('style');
+               
+                var frame = $('iframe'), 
+                    contents = frame.contents(),
+                    body = contents.find('body'),
+                    styleTag = contents
+                            .find('head')
+                            .append('<style></style>')
+                            .children('style');
+
+                    $('textarea').focus(function() {
+                        var $this = $(this);
+                        
+                        $this.keyup(function() {
+                            if ($this.attr('id') === 'edithtml'){
+                                body.html($this.val());
+                                //and apply to the full doc
+                                //body2.html($this.val());
+                                $('.content').html($this.val());
+                            } else {
+                                // it has to be css
+                                styleTag.text($this.val());
+                                //and apply to the full doc
+                                docStyleTag.text($this.val());
+                            }
+                        });
+                    });
+                   
+            }) ();
+        </script>
+        
+    </body>
 </html>
