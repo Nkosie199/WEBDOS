@@ -1,8 +1,8 @@
 /*
    CSS Style for Bleek and Lloyd Collection
    hussein suleman
-   modified by Brian Ngilazi & Nkosi Gumede for Capstone Project
-   02/09/2018
+   modified by Brian Ngilazi for Capstone Project
+   17/08/2018
 */
 
 
@@ -11,10 +11,75 @@
 body {
     font: 10pt serif;
     background-color:#cddedd;
+    margin: 0;
 }
 
 
 /* menu styles */
+/* Style the top navigation bar */
+.topnav {
+    overflow: hidden;
+    background-color: #333;
+    height: 10%;
+    width: 100%;
+}
+
+/* Style the topnav links */
+.topnav a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Change color on hover */
+.topnav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.ul.topnav{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    top:0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.li.topnav{
+    float: left;
+
+}
+
+.sidenav {
+    height: 100%;
+    width: 10%;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    padding-top: 20px;
+}
+
+.sidenav a {
+    padding: 6px 6px 6px 32px;
+    text-decoration: none;
+    font-size: 15px;
+    color: #818181;
+    display: block;
+}
+
+.sidenav a:hover {
+    color: #f1f1f1;
+}
+
+
+
 
 .header {
     font: 100% Times, serif;
@@ -22,12 +87,14 @@ body {
     background-color: #ffffff;
     padding: 3pt;
     border: solid #3916c7;
-    display: inline-block;
+    display: block;
     margin: 5pt;
     width: 130pt;
+    position: fixed;
     top: 0;
     left: 0;
     text-align: center;
+    overflow: hidden;
 }
 
 .header h1 {
@@ -104,15 +171,13 @@ body {
 /* content pane styles */
 
 .content {
-    background-color: #d3cac3;
-    /*
-    position: absolute;
     display: block;
+    width: 100%;
+    position: relative;
     top: 10pt;
-    left: 160pt;
+    left: 15%;
     right: 0;
     margin-right: 5pt;
-    */
 }
 
 ul {
@@ -140,8 +205,8 @@ ul li ul {
     border: 0px solid;
     padding: 5pt;
     margin: 5pt;
-    width: 150;
-    height: 200;
+    width: 100px;
+    height: 150px;
     background-color: #dddddd;
     text-align: center;
     font-style:normal; font-variant:normal; font-weight:normal; font-size:8pt; font-family:serif;
@@ -336,6 +401,7 @@ body.menu {
 
 .menutop .heading {
     height: 30pt;
+    background-color: #ded7cd;
 }
 
 .menutop h1 {
@@ -576,83 +642,4 @@ body.menu {
 
 .contrib img {
     vertical-align: top;
-}
-
-/* configurable styles section... */
-
-.grid {
-    width: 50%;
-    float: left;
-    -webkit-box-sizing: border-box;
-}
-
-.container {
-    background: #e3e3e3;
-    border-right: 5px solid white;
-    position: relative;
-}
-
-.output {
-    border-left: 1px solid #e3e3e3;
-}
-
-textarea {
-    width: 100%;
-    height: 200px;
-}
-
-iframe {
-    border: none;
-    width: 100%;
-}
-
-#streammenu {
-    display: inline-block;
-    background-color: whitesmoke;
-    padding: 5px;
-    margin: 5pt;
-    float: right;
-}
-
-.streamtabs {
-    background-color: green;
-    padding: 3px;
-}
-
-.streamtablinks {
-    border-radius: 3px;
-    padding: 10px;
-}
-
-.streamtabcontent {
-    display: none;
-    -webkit-transition-duration: 0.3s;
-    -moz-transition-duration: 0.3s;
-    -o-transition-duration: 0.3s;
-    transition-duration: 0.3s;
-    padding: 5px;
-}
-
-
-#top_slideout {
-    position: relative;
-    top: 0;
-    -webkit-transition-duration: 0.3s;
-    -moz-transition-duration: 0.3s;
-    -o-transition-duration: 0.3s;
-    transition-duration: 0.3s;
-    width: 100%;
-    margin: 0 auto;
-    overflow: hidden;
-}
-
-#top_slideout_inner {
-    position: relative;
-    /*top: -250px;*/
-    -webkit-transition-duration: 0.3s;
-    -moz-transition-duration: 0.3s;
-    -o-transition-duration: 0.3s;
-    transition-duration: 0.3s;
-    z-index: 3;
-    overflow: auto;
 }

@@ -12,6 +12,7 @@ import java.util.List;
 public class Directory extends PathItem {
     private List<Content> contentList;
     private List<Directory> subDirectories;
+    private Directory parent;
 
     public Directory(Path path){
         super(path);
@@ -24,7 +25,9 @@ public class Directory extends PathItem {
     }
 
     public void addSubDirectory(Directory directory){
+        directory.parent=this;
         subDirectories.add(directory);
+
     }
 
     public List<Directory> getSubDirectories() {
@@ -33,5 +36,13 @@ public class Directory extends PathItem {
 
     public List<Content> getContentList() {
         return contentList;
+    }
+
+    public Directory getParent() {
+        return parent;
+    }
+
+    public boolean hasParent() {
+        return parent!=null;
     }
 }

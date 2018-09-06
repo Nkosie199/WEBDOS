@@ -4,6 +4,7 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,10 +19,12 @@ import java.util.Map;
  */
 
 public class DirectoryMapper extends SimpleFileVisitor<Path> {
-    Map<String,Directory> directories;
+    private Map<String,Directory> directories;
+    private List<Content> contentList;
 
     DirectoryMapper(){
         directories=new HashMap<>();
+        contentList=new ArrayList<>();
     }
 
     /**
@@ -51,12 +54,13 @@ public class DirectoryMapper extends SimpleFileVisitor<Path> {
             directories.get(parentPathString).addSubDirectory(directory);
         }
         //add directory to Map
-        directories.put(path.toString(),new Directory(path));
+        directories.put(path.toString(),directory);
         return FileVisitResult.CONTINUE;
     }
 
     /**
-     * get the directory in which the file can be found  and add the file to the directory object
+     * adds the file to a content list also
+     * gets the directory in which the file can be found  and add the file to the directory object
      * @param path .
      * @param basicFileAttributes .
      * @return .
@@ -64,7 +68,12 @@ public class DirectoryMapper extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes)  {
         Directory containingDirectory=directories.get(path.getParent().toString());
-        if(containingDirectory!=null)containingDirectory.addContent(new Content(path));
+        if(containingDirectory!=null){
+            Content content=new Content(path);
+            containingDirectory.addContent(content);
+            contentList.add(content);
+            content.putMetadata("Creation Time",basicFileAttributes.creationTime().toString());
+        }
         return FileVisitResult.CONTINUE;
     }
 
@@ -72,5 +81,7 @@ public class DirectoryMapper extends SimpleFileVisitor<Path> {
         return new ArrayList<>(directories.values());
     }
 
-
+    public List<Content> getContentList() {
+        return contentList;
+    }
 }

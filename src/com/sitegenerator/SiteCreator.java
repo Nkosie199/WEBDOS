@@ -36,7 +36,8 @@ public class SiteCreator {
             PageCreator creator=new PageCreator(startingDirectory, directoryMapper.getAllDirectories());
 
             //create a page from each directory object
-            creator.createPages();
+            creator.createByDirectories();
+            creator.createAllContentPage(directoryMapper.getContentList());
 
             //For testing purposes only!!
             Desktop.getDesktop().browse(creator.homePagePath().toUri());
