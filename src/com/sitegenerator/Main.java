@@ -40,7 +40,7 @@ public class Main {
              PageCreator creator=new PageCreator(path,directories);
 
             //create a page from each directory object
-            creator.createPages();
+            //creator.createPages();
             Desktop.getDesktop().browse(creator.homePagePath().toUri());
             
         } catch (IOException e) {
