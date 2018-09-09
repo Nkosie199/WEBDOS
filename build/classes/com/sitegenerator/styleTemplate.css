@@ -172,12 +172,9 @@ body {
 
 .content {
     display: block;
+    background-color: white;
     width: 100%;
-    position: relative;
-    top: 10pt;
-    left: 15%;
-    right: 0;
-    margin-right: 5pt;
+    min-height: 500px;
 }
 
 ul {
@@ -660,6 +657,7 @@ body.menu {
 
 .output {
     border-left: 1px solid #e3e3e3;
+    background-color: white;
 }
 
 textarea {
@@ -681,7 +679,7 @@ iframe {
 }
 
 .streamtabs {
-    background-color: green;
+    background-color: #165196;
     padding: 3px;
 }
 
@@ -721,4 +719,10 @@ iframe {
     transition-duration: 0.3s;
     z-index: 3;
     overflow: auto;
+}
+
+#presetButtons {
+    width: 100%;
+    padding: 5px;
+    background-color: #5355fc;
 }

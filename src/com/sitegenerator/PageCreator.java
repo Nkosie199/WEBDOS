@@ -58,14 +58,17 @@ class PageCreator {
      * get template from resources
      */
     private void getTemplates(){
-        homeTemplateBuffer =ioManager.getTextResource("template_home.html");
+        homeTemplateBuffer =ioManager.getTextResource("template.html");
+        //homeTemplateBuffer =ioManager.getTextResource("template_home.html");
         templateBuffer=ioManager.getTextResource("template_page.html");
         folderTemplateBuffer=ioManager.getTextResource("template_directory.html");
     }
     
     private void writeStyleSheet(){
-        Path dest=sitePagesFolderPath.resolve("w3.css");
-        ioManager.copyResource("w3.css",dest);
+//        Path dest=sitePagesFolderPath.resolve("w3.css");
+//        ioManager.copyResource("w3.css",dest);
+          Path dest=sitePagesFolderPath.resolve("styleTemplate.css");
+          ioManager.copyResource("styleTemplate.css",dest);
     }
     
     private void makeHomePage(){
@@ -73,7 +76,8 @@ class PageCreator {
         htmlPageString=htmlPageString
                 .replace(TITLE,"home")
                 .replace(PAGE_HEADING,"Home")
-                .replace(STYLE_SHEET,siteDirectoryString+"/"+SITE_FOLDER+"/w3.css");
+                //.replace(STYLE_SHEET,siteDirectoryString+"/"+SITE_FOLDER+"/w3.css");
+                .replace(STYLE_SHEET,siteDirectoryString+"/"+SITE_FOLDER+"/styleTemplate.css");
 
         htmlPageString=addHomePageContent(htmlPageString);
         writePage(htmlPageString,"index");
