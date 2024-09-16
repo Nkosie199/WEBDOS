@@ -17,7 +17,7 @@ public class SiteCreator {
     public static void main(String[] args) {
         SiteCreator siteCreator=new SiteCreator(args[0]);
         siteCreator.run();
-
+        System.out.println("Generated pages for site paths");
     }
 
     private SiteCreator(String startingDirectory){

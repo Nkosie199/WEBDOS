@@ -1,4 +1,4 @@
-package com.sitegenerator;
+ package com.sitegenerator;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -23,8 +23,7 @@ public class Main {
             run(file.getAbsolutePath());
           
         }
-
-
+        System.out.println("Generated site paths");
     }
     
     public static void run(String path){
