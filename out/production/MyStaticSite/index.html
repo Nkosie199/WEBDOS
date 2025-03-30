@@ -2,26 +2,155 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="C:\Users\Acer\Documents\NetBeansProjects\WEBDOS-Project\out\production/MyStaticSite/styleTemplate.css">
+    <link rel="stylesheet" href="C:\Users\Nkosi\Documents\CodingProjects\MyProjects\Mynger Projects\WEBDOS\out\production/MyStaticSite/styleTemplate.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <title>home</title>
 
 </head>
 <body>
-    <div class="header">
-        <h1>Navigation</h1>
-        <div class="menu">
+    <!-- Adapted from template_home.html -->
+    <div class="w3-row w3-padding w3-theme-d2 w3-xlarge">
+        <div class="w3-quarter">
+            <div class="w3-bar">
+                <a href="#" class="w3-bar-item w3-button"><i class="fa fa-home"></i></a>
+            </div>
+        </div>
+
+        <div class="w3-half">
+            <input type="text" class="w3-border-0 w3-padding" style="width:100%">
+        </div>
+        
+        <div class="w3-quarter">
+            <!-- Adapted from styling branch -->
+            <div id="streammenu">
+                <div class="streamtabs">
+                    <button id="4style_settings" class="streamtablinks" onclick="dropEvent(event, 'style_settings')">Styling</button>
+                    <button id="4close" class="streamtablinks" onclick="dropEvent(event, 'close')">X</button>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+    
+    <!-- Adapted from styling branch-->
+    <div id="top_slideout">
+        <div id="top_slideout_inner">
+            <div id="style_settings" class="streamtabcontent">
+                <div class="container grid">
+                    <form>
+                        <h2>HTML</h2>
+                        <textarea id="edithtml"></textarea>
+
+                        <h2>CSS</h2>
+                        <textarea id="editcss"></textarea>
+                    </form>
+                </div>
+                <div class="output grid">
+                    <div id="presetButtons">
+                        <button id="preset1" onclick="loadPreset(event, 'preset1')">Preset 1</button>
+                    </div>
+                    <iframe></iframe>
+                </div>
+            </div>
+            <div id="close" class="streamtabcontent">
+            </div>
+        </div>
+    </div>
+
+    <div class="w3-container w3-padding-32 w3-theme-d1">
+        <h1>Home</h1>
+    </div>
+
+    <div class="w3-row-padding w3-text-theme ">
+        <p class="w3-large">Filter:</p>
+        
+<div class="w3-quarter w3-section"><div class="w3-card-4 w3-center w3-theme-dark"><a href="All.html"><h4>All</h4></a></div></div>
+<div class="w3-quarter w3-section"><div class="w3-card-4 w3-center w3-theme-dark"><a href="production.html"><h4>Directories</h4></a></div></div>
+<div class="w3-quarter w3-section"><div class="w3-card-4 w3-center w3-theme-dark"><a href="#"><h4>File Type<TBD></h4></a></div></div>
+    </div>
+    
+<div class="content">
+
+</div>
+
+    <footer class="w3-container w3-theme-d4">
+        <p class="w3-large">WEBDOS</p>
+    </footer>
+    
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>  
+    <script>
+        //for settings dropdowns
+        function dropEvent(evt, functionName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("streamtabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("streamtablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(functionName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        
+        //for styling presets
+        function loadPreset(evt, presetName) {
+            if (presetName == 'preset1'){
+                presetText = "h1 { background: black; } \nbody { background: white; }";
+                document.getElementById("editcss").value = presetText; // add content to html textarea
+            }
             
-<p><a href="sitegenerator.html">sitegenerator</a></p>
-<p><a href="StaticSiteGenerator.html">StaticSiteGenerator</a></p>
-<p><a href="com.html">com</a></p>
-<p><a href="production.html">production</a></p>
-        </div>
-    </div>
-    <div class="content">
-        <div class="heading">
-            <h1>Home</h1>
-            <p>This is your static site home page. Select an item on the menu to navigate to a page<p>
-        </div>
-    </div>
+        }
+
+        (function () {
+            var mycontent = document.getElementsByClassName('content'); //get the message line
+            //console.log('child element class: ' + mycontent);
+            for (var i = 0; i < mycontent.length; i++) {
+                var currentid = mycontent[i];
+                var outerhtml = currentid.outerHTML;
+                //console.log('html: '+outerhtml);
+            }
+            document.getElementById("edithtml").value = outerhtml; // add content to html textarea
+
+            var doc = $(this.document),
+                contents2 = doc.contents(),
+                body2 = contents2.find('.content'),
+                docStyleTag = contents2
+                        .find('head')
+                        .append('<style>!important</style>')
+                        .children('style');
+
+            var frame = $('iframe'), 
+                contents = frame.contents(),
+                body = contents.find('body'),
+                styleTag = contents
+                        .find('head')
+                        .append('<style></style>')
+                        .children('style');
+
+                $('textarea').focus(function() {
+                    var $this = $(this);
+
+                    $this.keyup(function() {
+                        if ($this.attr('id') === 'edithtml'){
+                            body.html($this.val());
+                            //and apply to the full doc
+                            //body2.html($this.val());
+                            $('.content').html($this.val());
+                        } else {
+                            // it has to be css
+                            styleTag.text($this.val());
+                            //and apply to the full doc
+                            docStyleTag.text($this.val());
+                        }
+                    });
+                });
+
+        }) ();
+    </script>   
+    
 </body>
 </html>
