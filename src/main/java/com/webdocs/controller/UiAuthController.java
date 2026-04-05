@@ -65,7 +65,13 @@ public class UiAuthController {
             session.setAttribute("currentUser", resolvedUsername);
             return "redirect:/";
         } catch (Exception e) {
-            model.addAttribute("error", "Login failed: " + e.getMessage());
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("301")) {
+                msg = "API redirect error — check server is using HTTPS.";
+            } else if (msg != null && msg.length() > 120) {
+                msg = msg.substring(0, 120) + "...";
+            }
+            model.addAttribute("error", "Login failed: " + msg);
             return "login";
         }
     }

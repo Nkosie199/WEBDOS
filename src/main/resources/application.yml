@@ -10,8 +10,8 @@ spring:
     store-type: none
 
 webdocs:
-  mynger-api-url: http://api.mynger.com
-  deepdiary-api-url: http://api.deepdiary.mynger.com
+  mynger-api-url: https://api.mynger.com
+  deepdiary-api-url: https://api.deepdiary.mynger.com
   output-dir: ${java.io.tmpdir}/webdocs-output
 
 springdoc:
