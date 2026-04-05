@@ -448,6 +448,7 @@
 
 <script th:inline="javascript">
     const currentUser = /*[[${currentUser}]]*/ 'User';
+    let dashFiles = []; // keep reference for preview callbacks
     const authToken = /*[[${authToken}]]*/ '';
 
     // Avatar initial
@@ -488,26 +489,85 @@
             </div>`).join('');
     }
 
+    // ── File type helpers (shared) ───────────────────────────────────────
+    const EXT_CATS = {
+        image:['jpg','jpeg','png','gif','webp','bmp','svg','avif'],
+        video:['mp4','webm','ogg','mov','avi','mkv'],
+        audio:['mp3','wav','ogg','m4a','aac','flac'],
+        pdf:['pdf'],
+        text:['txt','md','csv','log','xml','json','yaml','yml','sh','bat'],
+        code:['html','htm','css','js','ts','java','py','php','rb','go','sql'],
+    };
+    function getExtCat(name) {
+        if (!name) return 'other';
+        const e = name.split('.').pop().toLowerCase();
+        for (const [c,es] of Object.entries(EXT_CATS)) if (es.includes(e)) return c;
+        return 'other';
+    }
+
+    // ── Preview modal (inline in dashboard) ──────────────────────────────
+    function openFilePreview(f) {
+        if (!f) return;
+        const name = f.fileName || f.name || f.key || 'Unknown';
+        const url  = f.url || '';
+        const cat  = getExtCat(name);
+        let html = '';
+        if (!url) {
+            html = `<div style="text-align:center;color:#89b4c0"><div style="font-size:4rem">${getFileIcon(name)}</div><p>No URL available</p></div>`;
+        } else if (cat === 'image') {
+            html = `<img src="${url}" alt="${name}" style="max-width:100%;max-height:72vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6)">`;
+        } else if (cat === 'video') {
+            html = `<video src="${url}" controls style="max-width:100%;max-height:72vh;border-radius:8px"></video>`;
+        } else if (cat === 'audio') {
+            html = `<div style="text-align:center"><div style="font-size:4rem;margin-bottom:1rem">🎵</div><audio src="${url}" controls style="width:60%"></audio></div>`;
+        } else if (cat === 'pdf') {
+            html = `<iframe src="${url}#view=FitH" style="width:100%;height:72vh;border:none;border-radius:8px;background:#fff"></iframe>`;
+        } else if (cat === 'text' || cat === 'code') {
+            html = `<pre id="dashPreviewPre" style="background:#0d1b2a;color:#e0f7f4;padding:1.5rem;border-radius:8px;font-size:.85rem;line-height:1.6;overflow:auto;max-height:72vh;width:100%;white-space:pre-wrap">Loading…</pre>`;
+            setTimeout(() => fetch(url).then(r=>r.text()).then(t=>{const p=document.getElementById('dashPreviewPre');if(p)p.textContent=t;}).catch(()=>{const p=document.getElementById('dashPreviewPre');if(p)p.textContent='Could not load file.';}), 50);
+        } else {
+            html = `<div style="text-align:center;color:#89b4c0"><div style="font-size:5rem;margin-bottom:1rem">${getFileIcon(name)}</div><p>Preview not available. Use Open to view in your browser.</p></div>`;
+        }
+        const overlay = document.getElementById('dashPreviewOverlay');
+        document.getElementById('dashPreviewFilename').textContent = name;
+        document.getElementById('dashPreviewOpenLink').href = url;
+        document.getElementById('dashPreviewDlLink').href = url;
+        document.getElementById('dashPreviewDlLink').download = name;
+        document.getElementById('dashPreviewBody').innerHTML = html;
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDashPreview() {
+        document.getElementById('dashPreviewOverlay').style.display = 'none';
+        document.getElementById('dashPreviewBody').innerHTML = '';
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDashPreview(); });
+
     function renderFileTable(files) {
         const tbody = document.getElementById('fileTableBody');
         const arr = Array.isArray(files) ? files : [];
+        dashFiles = arr;
         document.getElementById('totalFiles').textContent = arr.length;
         if (arr.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><div>No documents found</div></div></td></tr>';
             return;
         }
-        tbody.innerHTML = arr.map(f => {
-            const name = f.name || f.filename || f.key || 'Unknown';
-            const ext = name.split('.').pop().toUpperCase();
+        tbody.innerHTML = arr.map((f, i) => {
+            const name = f.fileName || f.name || f.key || 'Unknown';
+            const url  = f.url || '';
+            const ext  = name.split('.').pop().toUpperCase();
             return `<tr>
-                <td>${getFileIcon(name)} ${name}</td>
+                <td style="cursor:pointer" onclick="openFilePreview(dashFiles[${i}])">${getFileIcon(name)} ${name}</td>
                 <td>${formatDate(f.lastModified || f.updatedAt)}</td>
                 <td><span class="file-type-badge">${ext}</span></td>
-                <td>${formatSize(f.size)}</td>
+                <td>${formatSize(f.sizeBytes || f.size)}</td>
                 <td>${f.owner || currentUser}</td>
                 <td>
-                    <button class="action-btn" onclick="downloadFile('${f.id || f.fileId || ''}')">⬇ Download</button>
-                    <button class="action-btn danger" onclick="deleteFile('${f.id || f.fileId || ''}')">🗑 Delete</button>
+                    <button class="action-btn" onclick="openFilePreview(dashFiles[${i}])">👁 Preview</button>
+                    ${url ? `<a href="${url}" target="_blank" class="action-btn" style="text-decoration:none">↗ Open</a>` : ''}
+                    ${url ? `<a href="${url}" download="${name}" class="action-btn" style="text-decoration:none">⬇ Download</a>` : ''}
+                    <button class="action-btn danger" onclick="deleteFile('${f.key || f.id || ''}')">🗑 Delete</button>
                 </td>
             </tr>`;
         }).join('');
@@ -518,17 +578,9 @@
         document.getElementById('fileTableBody').innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><div>No files found</div></div></td></tr>';
     }
 
-    function downloadFile(fileId) {
-        if (!fileId) return;
-        fetch('/api/storage/files/' + fileId + '/download')
-            .then(r => r.json())
-            .then(data => { if (data.url) window.open(data.url, '_blank'); })
-            .catch(console.error);
-    }
-
     function deleteFile(fileId) {
         if (!fileId || !confirm('Delete this file?')) return;
-        fetch('/api/storage/files/' + fileId, { method: 'DELETE' })
+        fetch('/api/storage/files/' + encodeURIComponent(fileId), { method: 'DELETE' })
             .then(() => loadDashboard())
             .catch(console.error);
     }
@@ -591,5 +643,17 @@
         loadDashboard();
     });
 </script>
+<!-- Dashboard preview modal -->
+<div id="dashPreviewOverlay" onclick="if(event.target===this)closeDashPreview()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;align-items:center;justify-content:center;flex-direction:column">
+  <div style="width:100%;max-width:1100px;display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;gap:1rem">
+    <span id="dashPreviewFilename" style="font-size:.95rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%"></span>
+    <div style="display:flex;gap:.5rem;flex-shrink:0">
+      <a id="dashPreviewOpenLink" href="#" target="_blank" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:.45rem 1rem;border-radius:7px;font-size:.85rem;cursor:pointer;text-decoration:none">↗ Open in New Tab</a>
+      <a id="dashPreviewDlLink" href="#" download style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:.45rem 1rem;border-radius:7px;font-size:.85rem;cursor:pointer;text-decoration:none">⬇ Download</a>
+      <button onclick="closeDashPreview()" style="background:rgba(220,38,38,.2);border:1px solid rgba(220,38,38,.4);color:#fff;padding:.45rem 1rem;border-radius:7px;font-size:.85rem;cursor:pointer">✕ Close</button>
+    </div>
+  </div>
+  <div id="dashPreviewBody" style="flex:1;width:100%;max-width:1100px;display:flex;align-items:center;justify-content:center;padding:0 1rem 1rem;overflow:auto"></div>
+</div>
 </body>
 </html>

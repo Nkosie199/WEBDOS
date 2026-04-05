@@ -54,18 +54,21 @@
         .btn-solid:hover { background: var(--accent); }
         .toggle-btn { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 0.45rem 0.7rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
         .toggle-btn.active { background: var(--accent); color: var(--text); border-color: var(--accent); }
-        /* Grid view */
+
+        /* ── Grid view ── */
         .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-        .file-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.2s; }
-        .file-card:hover { border-color: var(--accent); }
-        .file-card-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .file-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.2s, transform 0.15s; position: relative; }
+        .file-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .file-card-thumb { width: 100%; height: 90px; object-fit: cover; border-radius: 6px; margin-bottom: 0.5rem; }
+        .file-card-icon { font-size: 2.5rem; margin-bottom: 0.5rem; display: block; }
         .file-card-name { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .file-card-meta { font-size: 0.72rem; color: var(--muted); margin: 0.3rem 0; }
         .file-card-actions { display: flex; gap: 0.4rem; justify-content: center; margin-top: 0.6rem; }
         .icon-btn { background: none; border: 1px solid var(--border); color: var(--muted); width: 28px; height: 28px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
         .icon-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--text); }
         .icon-btn.danger:hover { background: #dc2626; border-color: #dc2626; }
-        /* List view */
+
+        /* ── List view ── */
         .file-list { display: none; }
         .file-list.show { display: block; }
         .file-grid.hide { display: none; }
@@ -78,15 +81,58 @@
         .action-btn { background: none; border: 1px solid var(--border); color: var(--text); padding: 0.3rem 0.6rem; border-radius: 5px; font-size: 0.75rem; cursor: pointer; transition: all 0.15s; margin-right: 0.3rem; }
         .action-btn:hover { background: var(--accent); border-color: var(--accent); }
         .action-btn.danger:hover { background: #dc2626; border-color: #dc2626; }
+        .file-name-link { color: var(--text); text-decoration: none; font-weight: 500; }
+        .file-name-link:hover { color: var(--accent); text-decoration: underline; }
+
+        /* ── States ── */
         .empty-state { text-align: center; padding: 4rem; color: var(--muted); }
         .empty-state .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
         .empty-state h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
         .empty-state p { font-size: 0.88rem; }
         .upload-input { display: none; }
         .loading { text-align: center; padding: 3rem; color: var(--muted); }
+
+        /* ── Preview Modal ── */
+        .preview-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+            z-index: 1000; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .preview-overlay.open { display: flex; }
+        .preview-toolbar {
+            width: 100%; max-width: 1100px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0.8rem 1rem; gap: 1rem;
+        }
+        .preview-filename { font-size: 0.95rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
+        .preview-toolbar-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .preview-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.45rem 1rem; border-radius: 7px; font-size: 0.85rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; transition: background 0.15s; }
+        .preview-btn:hover { background: var(--accent); border-color: var(--accent); }
+        .preview-btn.close-btn { background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.4); }
+        .preview-btn.close-btn:hover { background: #dc2626; border-color: #dc2626; }
+        .preview-content { flex: 1; width: 100%; max-width: 1100px; display: flex; align-items: center; justify-content: center; padding: 0 1rem 1rem; overflow: auto; }
+        .preview-content img { max-width: 100%; max-height: 75vh; object-fit: contain; border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); }
+        .preview-content video, .preview-content audio { max-width: 100%; max-height: 75vh; border-radius: 8px; outline: none; }
+        .preview-content iframe { width: 100%; height: 75vh; border: none; border-radius: 8px; background: #fff; }
+        .preview-content pre { background: #0d1b2a; color: #e0f7f4; padding: 1.5rem; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 0.88rem; line-height: 1.6; overflow: auto; max-height: 75vh; width: 100%; white-space: pre-wrap; word-break: break-all; }
+        .preview-unsupported { text-align: center; color: var(--muted); }
+        .preview-unsupported .big-icon { font-size: 5rem; margin-bottom: 1rem; display: block; }
+        .preview-unsupported p { font-size: 0.95rem; margin-bottom: 1.5rem; }
     </style>
 </head>
 <body>
+
+<!-- ── Preview Modal ────────────────────────────────────────────────────── -->
+<div class="preview-overlay" id="previewOverlay" onclick="handleOverlayClick(event)">
+    <div class="preview-toolbar">
+        <span class="preview-filename" id="previewFilename"></span>
+        <div class="preview-toolbar-actions">
+            <a href="#" id="previewOpenLink" target="_blank" class="preview-btn">↗ Open in New Tab</a>
+            <a href="#" id="previewDownloadLink" download class="preview-btn">⬇ Download</a>
+            <button class="preview-btn close-btn" onclick="closePreview()">✕ Close</button>
+        </div>
+    </div>
+    <div class="preview-content" id="previewContent"></div>
+</div>
+
 <aside class="sidebar">
     <div class="sidebar-logo">📄 WebDocs<span>Document Management</span></div>
     <nav class="sidebar-nav">
@@ -160,13 +206,34 @@
 
     document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
 
-    function getFileIcon(name) {
-        if (!name) return '📄';
+    // ── File type helpers ──────────────────────────────────────────────────
+    const EXT_MAP = {
+        image:  ['jpg','jpeg','png','gif','webp','bmp','svg','ico','tiff','avif'],
+        video:  ['mp4','webm','ogg','mov','avi','mkv','m4v','wmv'],
+        audio:  ['mp3','wav','ogg','m4a','aac','flac','opus'],
+        pdf:    ['pdf'],
+        text:   ['txt','md','csv','log','xml','json','yaml','yml','ini','env','sh','bat'],
+        code:   ['html','htm','css','js','ts','jsx','tsx','java','py','php','rb','go','rs','c','cpp','cs','sql'],
+        archive:['zip','tar','gz','rar','7z','bz2'],
+        doc:    ['doc','docx','odt','rtf'],
+        sheet:  ['xls','xlsx','ods','csv'],
+        slide:  ['ppt','pptx','odp'],
+    };
+
+    function getExtCategory(name) {
+        if (!name) return 'other';
         const ext = name.split('.').pop().toLowerCase();
-        const icons = { pdf: '📕', doc: '📝', docx: '📝', xls: '📊', xlsx: '📊',
-            jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', mp4: '🎬', mp3: '🎵',
-            zip: '🗜️', html: '🌐', js: '⚙️', css: '🎨', txt: '📃' };
-        return icons[ext] || '📄';
+        for (const [cat, exts] of Object.entries(EXT_MAP)) {
+            if (exts.includes(ext)) return cat;
+        }
+        return 'other';
+    }
+
+    function getFileIcon(name) {
+        const cat = getExtCategory(name);
+        const icons = { image:'🖼️', video:'🎬', audio:'🎵', pdf:'📕', text:'📃',
+                        code:'⚙️', archive:'🗜️', doc:'📝', sheet:'📊', slide:'📊', other:'📄' };
+        return icons[cat] || '📄';
     }
 
     function formatSize(bytes) {
@@ -181,6 +248,82 @@
         try { return new Date(d).toLocaleDateString(); } catch { return d; }
     }
 
+    // ── Preview modal ──────────────────────────────────────────────────────
+    function openPreview(file) {
+        const name = file.fileName || file.name || file.key || 'Unknown';
+        const url  = file.url || '';
+        const cat  = getExtCategory(name);
+
+        document.getElementById('previewFilename').textContent = name;
+        document.getElementById('previewOpenLink').href = url;
+        document.getElementById('previewDownloadLink').href = url;
+        document.getElementById('previewDownloadLink').download = name;
+
+        const content = document.getElementById('previewContent');
+        content.innerHTML = '';
+
+        if (!url) {
+            content.innerHTML = `<div class="preview-unsupported">
+                <span class="big-icon">${getFileIcon(name)}</span>
+                <p>No URL available for this file.</p></div>`;
+        } else if (cat === 'image') {
+            const img = document.createElement('img');
+            img.src = url; img.alt = name;
+            img.onerror = () => { img.replaceWith(unsupportedEl(name, 'Image failed to load.')); };
+            content.appendChild(img);
+        } else if (cat === 'video') {
+            const vid = document.createElement('video');
+            vid.src = url; vid.controls = true; vid.autoplay = false;
+            vid.style.maxWidth = '100%';
+            vid.onerror = () => { vid.replaceWith(unsupportedEl(name, 'Video format not supported by browser.')); };
+            content.appendChild(vid);
+        } else if (cat === 'audio') {
+            const aud = document.createElement('audio');
+            aud.src = url; aud.controls = true; aud.style.width = '60%';
+            content.appendChild(aud);
+        } else if (cat === 'pdf') {
+            const iframe = document.createElement('iframe');
+            iframe.src = url + '#view=FitH';
+            iframe.title = name;
+            content.appendChild(iframe);
+        } else if (cat === 'text' || cat === 'code') {
+            // Fetch and display text content
+            const pre = document.createElement('pre');
+            pre.textContent = 'Loading…';
+            content.appendChild(pre);
+            fetch(url)
+                .then(r => r.text())
+                .then(t => { pre.textContent = t; })
+                .catch(() => { pre.textContent = 'Could not load file content.'; });
+        } else {
+            // Unsupported — show icon + open-in-tab option
+            content.appendChild(unsupportedEl(name, 'Preview not available for this file type. Use "Open in New Tab" to view it.'));
+        }
+
+        document.getElementById('previewOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function unsupportedEl(name, msg) {
+        const div = document.createElement('div');
+        div.className = 'preview-unsupported';
+        div.innerHTML = `<span class="big-icon">${getFileIcon(name)}</span><p>${msg}</p>`;
+        return div;
+    }
+
+    function closePreview() {
+        document.getElementById('previewOverlay').classList.remove('open');
+        document.getElementById('previewContent').innerHTML = '';
+        document.body.style.overflow = '';
+    }
+
+    function handleOverlayClick(e) {
+        if (e.target === document.getElementById('previewOverlay')) closePreview();
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreview(); });
+
+    // ── View mode ──────────────────────────────────────────────────────────
     function setView(mode) {
         viewMode = mode;
         document.getElementById('gridBtn').classList.toggle('active', mode === 'grid');
@@ -190,70 +333,84 @@
 
     function filterFiles() {
         const q = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allFiles.filter(f => (f.name || f.filename || f.key || '').toLowerCase().includes(q));
+        const filtered = allFiles.filter(f => {
+            const name = f.fileName || f.name || f.key || '';
+            return name.toLowerCase().includes(q);
+        });
         renderFiles(filtered);
     }
 
+    // ── Render ─────────────────────────────────────────────────────────────
     function renderFiles(files) {
-        const grid = document.getElementById('fileGrid');
-        const listDiv = document.getElementById('fileList');
+        const grid     = document.getElementById('fileGrid');
+        const listDiv  = document.getElementById('fileList');
         const listBody = document.getElementById('fileListBody');
+        const empty    = document.getElementById('emptyState');
+
         if (files.length === 0) {
-            grid.style.display = 'none';
-            listDiv.style.display = 'none';
-            document.getElementById('emptyState').style.display = 'block';
-            return;
+            grid.style.display = 'none'; listDiv.style.display = 'none';
+            empty.style.display = 'block'; return;
         }
-        document.getElementById('emptyState').style.display = 'none';
+        empty.style.display = 'none';
+
         if (viewMode === 'grid') {
-            grid.style.display = 'grid';
-            listDiv.style.display = 'none';
-            grid.innerHTML = files.map(f => {
-                const name = f.name || f.filename || f.key || 'Unknown';
-                const id = f.id || f.fileId || '';
-                return `<div class="file-card">
-                    <div class="file-card-icon">${getFileIcon(name)}</div>
+            grid.style.display = 'grid'; listDiv.style.display = 'none';
+            grid.innerHTML = files.map((f, i) => {
+                const name = f.fileName || f.name || f.key || 'Unknown';
+                const url  = f.url || '';
+                const cat  = getExtCategory(name);
+                const idx  = allFiles.indexOf(f) >= 0 ? allFiles.indexOf(f) : i;
+                const thumb = cat === 'image' && url
+                    ? `<img class="file-card-thumb" src="${url}" alt="${name}" onerror="this.style.display='none';this.nextSibling.style.display='block'">`
+                      + `<span class="file-card-icon" style="display:none">${getFileIcon(name)}</span>`
+                    : `<span class="file-card-icon">${getFileIcon(name)}</span>`;
+                return `<div class="file-card" onclick="openPreview(allFiles[${idx}])">
+                    ${thumb}
                     <div class="file-card-name" title="${name}">${name}</div>
-                    <div class="file-card-meta">${formatSize(f.size)}</div>
+                    <div class="file-card-meta">${formatSize(f.sizeBytes || f.size)}</div>
                     <div class="file-card-meta">${formatDate(f.lastModified || f.updatedAt)}</div>
-                    <div class="file-card-actions">
-                        <button class="icon-btn" title="Download" onclick="downloadFile('${id}')">⬇</button>
-                        <button class="icon-btn danger" title="Delete" onclick="deleteFile('${id}')">🗑</button>
+                    <div class="file-card-actions" onclick="event.stopPropagation()">
+                        <button class="icon-btn" title="Preview" onclick="openPreview(allFiles[${idx}])">👁</button>
+                        ${url ? `<a href="${url}" target="_blank" class="icon-btn" title="Open in new tab" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none">↗</a>` : ''}
+                        ${url ? `<a href="${url}" download="${name}" class="icon-btn" title="Download" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none">⬇</a>` : ''}
+                        <button class="icon-btn danger" title="Delete" onclick="deleteFile('${f.key || f.id || ''}')">🗑</button>
                     </div>
                 </div>`;
             }).join('');
         } else {
-            grid.style.display = 'none';
-            listDiv.style.display = 'block';
-            listBody.innerHTML = files.map(f => {
-                const name = f.name || f.filename || f.key || 'Unknown';
-                const ext = name.split('.').pop().toUpperCase();
-                const id = f.id || f.fileId || '';
+            grid.style.display = 'none'; listDiv.style.display = 'block';
+            listBody.innerHTML = files.map((f, i) => {
+                const name = f.fileName || f.name || f.key || 'Unknown';
+                const url  = f.url || '';
+                const ext  = name.split('.').pop().toUpperCase();
+                const idx  = allFiles.indexOf(f) >= 0 ? allFiles.indexOf(f) : i;
                 return `<tr>
-                    <td>${getFileIcon(name)} ${name}</td>
+                    <td>
+                        <span style="cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem" onclick="openPreview(allFiles[${idx}])">
+                            ${getFileIcon(name)}
+                            <span class="file-name-link">${name}</span>
+                        </span>
+                    </td>
                     <td>${formatDate(f.lastModified || f.updatedAt)}</td>
                     <td><span class="file-type-badge">${ext}</span></td>
-                    <td>${formatSize(f.size)}</td>
+                    <td>${formatSize(f.sizeBytes || f.size)}</td>
                     <td>
-                        <button class="action-btn" onclick="downloadFile('${id}')">⬇ Download</button>
-                        <button class="action-btn danger" onclick="deleteFile('${id}')">🗑 Delete</button>
+                        <button class="action-btn" onclick="openPreview(allFiles[${idx}])">👁 Preview</button>
+                        ${url ? `<a href="${url}" target="_blank" class="action-btn" style="text-decoration:none">↗ Open</a>` : ''}
+                        ${url ? `<a href="${url}" download="${name}" class="action-btn" style="text-decoration:none">⬇ Download</a>` : ''}
+                        <button class="action-btn danger" onclick="deleteFile('${f.key || f.id || ''}')">🗑 Delete</button>
                     </td>
                 </tr>`;
             }).join('');
         }
     }
 
-    // FileMetadata.url is the direct S3 URL — just open it
-    function downloadFile(fileUrl) {
-        if (!fileUrl) { alert('No download URL available for this file.'); return; }
-        window.open(fileUrl, '_blank');
-    }
-
+    // ── File actions ───────────────────────────────────────────────────────
     function deleteFile(fileId) {
-        if (!fileId || !confirm('Delete this file?')) return;
-        fetch('/api/storage/files/' + fileId, { method: 'DELETE' })
+        if (!fileId || !confirm('Delete this file? This cannot be undone.')) return;
+        fetch('/api/storage/files/' + encodeURIComponent(fileId), { method: 'DELETE' })
             .then(() => loadFiles())
-            .catch(console.error);
+            .catch(e => alert('Delete failed: ' + e.message));
     }
 
     function handleUpload(files) {
@@ -272,16 +429,16 @@
                     return fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
                 }
             })
-            .then(() => loadFiles())
+            .then(() => { alert('Upload complete!'); loadFiles(); })
             .catch(e => alert('Upload failed: ' + e.message));
         });
     }
 
-    // Real Mynger API: GET /api/storage/files/{userId} — returns FileMetadata[]
-    // FileMetadata: { key, fileName, type, sizeBytes, sizeMB, lastModified, owner, url }
+    // ── Data loading ───────────────────────────────────────────────────────
     function loadFiles() {
         document.getElementById('loadingState').style.display = 'block';
         document.getElementById('fileGrid').style.display = 'none';
+        document.getElementById('fileList').style.display = 'none';
         fetch('/api/storage/files?userId=' + encodeURIComponent(currentUser))
             .then(r => r.json())
             .then(files => {
@@ -295,27 +452,21 @@
             });
     }
 
-    // Real Mynger API: GET /api/storage/dashboard/{userId} for storage stats
     function loadStorageStats() {
         fetch('/api/storage/dashboard?userId=' + encodeURIComponent(currentUser))
             .then(r => r.json())
             .then(data => {
-                const usedMB = data.totalSizeMB || 0;
+                const usedMB  = data.totalSizeMB || 0;
                 const limitMB = data.storageLimitMB || 10240;
                 const pct = Math.min((usedMB / limitMB) * 100, 100).toFixed(1);
                 document.getElementById('storageBar').style.width = pct + '%';
                 document.getElementById('storageText').textContent =
                     usedMB.toFixed(1) + ' MB of ' + limitMB.toFixed(0) + ' MB';
             })
-            .catch(() => {
-                document.getElementById('storageText').textContent = 'Storage info unavailable';
-            });
+            .catch(() => { document.getElementById('storageText').textContent = 'Storage info unavailable'; });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadFiles();
-        loadStorageStats();
-    });
+    document.addEventListener('DOMContentLoaded', () => { loadFiles(); loadStorageStats(); });
 </script>
 </body>
 </html>
