@@ -1,7 +1,7 @@
 # 🌐 WebDocs
 
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.3-brightgreen?logo=spring)
-![Java](https://img.shields.io/badge/Java-17-blue?logo=java)
+![Java](https://img.shields.io/badge/Java-23-blue?logo=java)
 ![Maven](https://img.shields.io/badge/Maven-Build-orange?logo=apachemaven)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
@@ -25,74 +25,58 @@ WebDocs extends the original WEBDOS static site generator (a NetBeans Java proje
 
 | Requirement | Version | Notes |
 |-------------|---------|-------|
-| **Java JDK** | 17+ | Installed at `C:\Program Files\Java\jdk-23` |
-| **Maven** | 3.8+ | Installed at `C:\Users\Administrator\.m2\wrapper\dists\apache-maven-3.8.6-bin\...\apache-maven-3.8.6\bin\mvn` |
-| **Git** | any | `C:\Program Files\Git\bin\git.exe` |
-
-> 💡 **Tip:** The easiest way to run this is through **IntelliJ IDEA** or **NetBeans** which will auto-detect Maven and Java for you.
+| **Java JDK** | 23+ | Installed at `/mnt/c/Program Files/Java/jdk-23` |
+| **Maven** | 3.8+ | At `~/.m2/wrapper/dists/apache-maven-3.8.6-bin/.../apache-maven-3.8.6/bin/mvn` |
+| **Git** | any | Available via bash |
 
 ---
 
 ## ⚡ How to Run
 
-### Option 1 — IntelliJ IDEA (Recommended)
+### Option 1 — Bash (WSL or Git Bash)
 
-1. Open IntelliJ IDEA
-2. **File → Open** → select the `WEBDOS` folder
-3. IntelliJ will auto-detect it as a Maven project and import dependencies
+```bash
+# Set Java 23
+export JAVA_HOME="/mnt/c/Program Files/Java/jdk-23"
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# Set Maven
+export MVN="$HOME/.m2/wrapper/dists/apache-maven-3.8.6-bin/1ks0nkde5v1pk9vtc31i9d0lcd/apache-maven-3.8.6/bin/mvn"
+
+# Navigate to project
+cd "/mnt/c/Users/Administrator/Documents/CodingProjects/WEBDOS"
+
+# Build (skip tests for fast start)
+"$MVN" clean package -DskipTests
+
+# Run the jar
+java -jar target/webdocs-1.0.0.jar
+```
+
+### Option 2 — Run directly with Maven (no build step needed)
+
+```bash
+export JAVA_HOME="/mnt/c/Program Files/Java/jdk-23"
+export PATH="$JAVA_HOME/bin:$PATH"
+export MVN="$HOME/.m2/wrapper/dists/apache-maven-3.8.6-bin/1ks0nkde5v1pk9vtc31i9d0lcd/apache-maven-3.8.6/bin/mvn"
+
+cd "/mnt/c/Users/Administrator/Documents/CodingProjects/WEBDOS"
+"$MVN" spring-boot:run
+```
+
+### Option 3 — IntelliJ IDEA
+
+1. **File → Open** → select the `WEBDOS` folder
+2. IntelliJ auto-detects the `pom.xml` and imports dependencies
+3. Set Project SDK to **Java 23** (File → Project Structure → SDK)
 4. Open `src/main/java/com/webdocs/WebDocsApplication.java`
 5. Click the **▶ green Run button** next to `main()`
-6. Wait for: `Started WebDocsApplication on port 8080`
 
-### Option 2 — NetBeans
+### Option 4 — NetBeans
 
-1. Open NetBeans
-2. **File → Open Project** → select the `WEBDOS` folder
-3. NetBeans detects the `pom.xml` and loads it as a Maven project
-4. Right-click the project → **Run** (or press F6)
-5. NetBeans will run `mvn spring-boot:run` automatically
-
-### Option 3 — Command Line (Windows CMD)
-
-```cmd
-:: Set Java home (adjust path if your JDK version differs)
-set JAVA_HOME=C:\Program Files\Java\jdk-23
-set PATH=%JAVA_HOME%\bin;%PATH%
-
-:: Set Maven path
-set MVN=C:\Users\Administrator\.m2\wrapper\dists\apache-maven-3.8.6-bin\1ks0nkde5v1pk9vtc31i9d0lcd\apache-maven-3.8.6\bin\mvn
-
-:: Navigate to project
-cd C:\Users\Administrator\Documents\CodingProjects\WEBDOS
-
-:: Build (skip tests for fast start)
-%MVN% clean package -DskipTests
-
-:: Run
-java -jar target\webdocs-1.0.0.jar
-```
-
-### Option 4 — Command Line (PowerShell)
-
-```powershell
-$env:JAVA_HOME = "C:\Program Files\Java\jdk-23"
-$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
-$mvn = "C:\Users\Administrator\.m2\wrapper\dists\apache-maven-3.8.6-bin\1ks0nkde5v1pk9vtc31i9d0lcd\apache-maven-3.8.6\bin\mvn.cmd"
-
-cd "C:\Users\Administrator\Documents\CodingProjects\WEBDOS"
-
-# Build
-& $mvn clean package -DskipTests
-
-# Run
-java -jar target\webdocs-1.0.0.jar
-```
-
-### Option 5 — Run directly with Maven (no build step)
-
-```powershell
-& $mvn spring-boot:run
-```
+1. **File → Open Project** → select the `WEBDOS` folder
+2. NetBeans detects `pom.xml` and loads it as a Maven project
+3. Right-click the project → **Run** (or press F6)
 
 ---
 
@@ -111,8 +95,13 @@ Once running, open your browser:
 
 ## 🧪 Running Tests
 
-```powershell
-& $mvn test
+```bash
+export JAVA_HOME="/mnt/c/Program Files/Java/jdk-23"
+export PATH="$JAVA_HOME/bin:$PATH"
+export MVN="$HOME/.m2/wrapper/dists/apache-maven-3.8.6-bin/1ks0nkde5v1pk9vtc31i9d0lcd/apache-maven-3.8.6/bin/mvn"
+
+cd "/mnt/c/Users/Administrator/Documents/CodingProjects/WEBDOS"
+"$MVN" test
 ```
 
 Expected output:
