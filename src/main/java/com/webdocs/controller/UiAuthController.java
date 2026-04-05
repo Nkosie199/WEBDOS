@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.Map;
 
@@ -34,20 +35,18 @@ public class UiAuthController {
                           @RequestParam String password,
                           HttpSession session,
                           Model model) {
+
+        String token = null;
+
+        // ── Step 1: Try Cognito signin ─────────────────────────────────────
         try {
-            // Step 1: Try Cognito signin via Mynger API
             Map<String, Object> body = Map.of("username", username, "password", password);
             Object response = myngerService.signIn(body, null).block();
 
-            String token = null;
-            String resolvedUsername = username;
-
             if (response instanceof Map<?, ?> responseMap) {
-                // Extract JWT from common field names
-                for (String field : new String[]{"token", "accessToken", "access_token", "idToken", "AuthenticationResult"}) {
+                for (String field : new String[]{"token", "accessToken", "access_token", "idToken"}) {
                     Object t = responseMap.get(field);
                     if (t instanceof Map<?, ?> nested) {
-                        // Cognito AuthenticationResult contains AccessToken
                         Object at = nested.get("AccessToken");
                         if (at == null) at = nested.get("IdToken");
                         if (at != null) { token = at.toString(); break; }
@@ -56,51 +55,46 @@ public class UiAuthController {
                         break;
                     }
                 }
-                Object userObj = responseMap.get("username");
-                if (userObj == null) userObj = responseMap.get("email");
-                if (userObj != null) resolvedUsername = userObj.toString();
             }
+        } catch (WebClientResponseException e) {
+            // 400/401/403 from Mynger — Cognito account likely unconfirmed.
+            // Fall through to stream token fallback.
+        } catch (Exception e) {
+            // Network error etc — also fall through
+        }
 
-            // Step 2: If Cognito signin failed, try stream token fallback
-            // (works when account is in DB but Cognito confirmation is pending)
-            if (token == null) {
-                try {
-                    Object userRecord = myngerService.getUserByUsername(username, null).block();
-                    if (userRecord instanceof Map<?, ?> userMap && userMap.containsKey("username")) {
-                        // User exists in DB — get stream token as auth token
-                        Object streamResp = myngerService.getStreamToken(username).block();
-                        if (streamResp instanceof Map<?, ?> streamMap) {
-                            Object streamToken = streamMap.get("token");
-                            if (streamToken != null) {
-                                token = streamToken.toString();
-                                resolvedUsername = username;
-                            }
+        // ── Step 2: Stream token fallback ─────────────────────────────────
+        // If Cognito signin failed but user exists in DB, use stream token.
+        // This covers accounts registered but not yet Cognito-confirmed.
+        if (token == null) {
+            try {
+                Object userRecord = myngerService.getUserByUsername(username, null).block();
+                if (userRecord instanceof Map<?, ?> userMap
+                        && userMap.containsKey("username")
+                        && username.equals(userMap.get("username"))) {
+
+                    Object streamResp = myngerService.getStreamToken(username).block();
+                    if (streamResp instanceof Map<?, ?> streamMap) {
+                        Object streamToken = streamMap.get("token");
+                        if (streamToken != null) {
+                            token = streamToken.toString();
                         }
                     }
-                } catch (Exception fallbackEx) {
-                    // User doesn't exist at all
                 }
+            } catch (Exception fallbackEx) {
+                // User doesn't exist or stream token unavailable
             }
+        }
 
-            if (token == null) {
-                model.addAttribute("error", "Invalid username or password.");
-                return "login";
-            }
-
-            session.setAttribute("authToken", "Bearer " + token);
-            session.setAttribute("currentUser", resolvedUsername);
-            return "redirect:/";
-
-        } catch (Exception e) {
-            String msg = e.getMessage();
-            if (msg != null && msg.contains("301")) {
-                msg = "API configuration error — please contact support.";
-            } else if (msg != null && msg.length() > 150) {
-                msg = msg.substring(0, 150) + "...";
-            }
-            model.addAttribute("error", "Login failed: " + msg);
+        // ── Result ─────────────────────────────────────────────────────────
+        if (token == null) {
+            model.addAttribute("error", "Invalid username or password.");
             return "login";
         }
+
+        session.setAttribute("authToken", "Bearer " + token);
+        session.setAttribute("currentUser", username);
+        return "redirect:/";
     }
 
     @GetMapping("/logout")

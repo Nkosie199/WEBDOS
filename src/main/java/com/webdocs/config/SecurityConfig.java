@@ -1,13 +1,10 @@
 package com.webdocs.config;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -18,12 +15,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // ── HTTPS enforcement ──────────────────────────────────────────
-            .requiresChannel(channel -> channel
-                .anyRequest().requiresSecure()
-            )
-
             // ── Security headers ───────────────────────────────────────────
+            // requiresChannel() removed — Cloudflare enforces HTTPS externally,
+            // the app listens on HTTPS (self-signed) internally. Adding
+            // requiresChannel causes redirect loops when behind a tunnel.
             .headers(headers -> headers
                 .httpStrictTransportSecurity(hsts -> hsts
                     .includeSubDomains(true)
@@ -48,24 +43,21 @@ public class SecurityConfig {
                 .frameOptions(frame -> frame.sameOrigin())
             )
 
-            // ── CSRF — enable for UI forms, disable for REST API paths ─────
+            // ── CSRF: on for UI forms, off for REST/Swagger paths ──────────
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers(
                     new AntPathRequestMatcher("/api/**"),
                     new AntPathRequestMatcher("/v3/api-docs/**"),
-                    new AntPathRequestMatcher("/swagger-ui/**")
+                    new AntPathRequestMatcher("/swagger-ui/**"),
+                    new AntPathRequestMatcher("/swagger-ui.html")
                 )
             )
 
-            // ── Authorization rules ────────────────────────────────────────
-            // We use our own session-based AuthInterceptor for UI auth,
-            // so Spring Security just allows all requests through (the interceptor
-            // handles redirects to /login). API endpoints are open (JWT from Mynger).
+            // ── Allow all — AuthInterceptor handles UI route protection ────
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll()
             )
 
-            // ── Disable Spring Security's own login form ───────────────────
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
             .logout(logout -> logout.disable());
