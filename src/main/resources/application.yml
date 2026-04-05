@@ -1,5 +1,19 @@
 server:
   port: 5555
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-store-password: webdocs2026
+    key-store-type: PKCS12
+    key-alias: webdocs
+  http2:
+    enabled: true
+  servlet:
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: strict
 
 spring:
   application:
