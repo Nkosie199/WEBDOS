@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>WebDocs — My Files</title>
+    <style>
+        :root {
+            --bg: #0d1b2a; --sidebar: #006d77; --accent: #0a9396;
+            --text: #e0f7f4; --card: #122535; --border: #1e3a4a;
+            --muted: #89b4c0; --sidebar-w: 250px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-w); background: var(--sidebar); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+        .sidebar-logo { padding: 1.5rem 1.2rem 1rem; font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo span { opacity: 0.6; font-size: 0.7rem; display: block; font-weight: 400; letter-spacing: 0; }
+        .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1.2rem; cursor: pointer; transition: background 0.15s; text-decoration: none; color: var(--text); font-size: 0.92rem; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); }
+        .nav-item.active { background: rgba(255,255,255,0.18); font-weight: 600; }
+        .nav-section { padding: 1rem 1.2rem 0.4rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; }
+        .folder-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 1.2rem 0.5rem 1.8rem; cursor: pointer; font-size: 0.88rem; opacity: 0.85; transition: background 0.15s; }
+        .folder-item:hover { background: rgba(255,255,255,0.1); }
+        .sidebar-bottom { padding: 1rem 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .new-doc-btn { display: block; width: 100%; padding: 0.7rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: var(--text); text-align: center; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.2s; margin-bottom: 1rem; }
+        .new-doc-btn:hover { background: rgba(255,255,255,0.25); }
+        .storage-bar-label { font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.4rem; }
+        .storage-bar-track { height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; }
+        .storage-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; transition: width 1s ease; }
+        .storage-text { font-size: 0.72rem; opacity: 0.6; margin-top: 0.3rem; }
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1.8rem; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+        .search-box { flex: 1; max-width: 380px; position: relative; }
+        .search-box input { width: 100%; padding: 0.55rem 1rem 0.55rem 2.4rem; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; color: var(--text); font-size: 0.88rem; outline: none; }
+        .search-box::before { content: '🔍'; position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); font-size: 0.8rem; }
+        .topbar-actions { display: flex; align-items: center; gap: 1rem; margin-left: auto; }
+        .notif-btn { background: none; border: none; color: var(--text); font-size: 1.2rem; cursor: pointer; }
+        .user-chip { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+        .avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+        .user-name { font-size: 0.88rem; font-weight: 500; }
+        .logout-link { font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+        .logout-link:hover { color: var(--text); }
+        .content { padding: 1.8rem; flex: 1; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .page-header h2 { font-size: 1.4rem; font-weight: 700; }
+        .breadcrumb { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+        .breadcrumb a { color: var(--accent); text-decoration: none; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        .btn-outline:hover { background: var(--accent); color: var(--text); }
+        .btn-solid { background: var(--sidebar); color: var(--text); }
+        .btn-solid:hover { background: var(--accent); }
+        .toggle-btn { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 0.45rem 0.7rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+        .toggle-btn.active { background: var(--accent); color: var(--text); border-color: var(--accent); }
+        /* Grid view */
+        .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+        .file-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem 1rem; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+        .file-card:hover { border-color: var(--accent); }
+        .file-card-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .file-card-name { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-card-meta { font-size: 0.72rem; color: var(--muted); margin: 0.3rem 0; }
+        .file-card-actions { display: flex; gap: 0.4rem; justify-content: center; margin-top: 0.6rem; }
+        .icon-btn { background: none; border: 1px solid var(--border); color: var(--muted); width: 28px; height: 28px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
+        .icon-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--text); }
+        .icon-btn.danger:hover { background: #dc2626; border-color: #dc2626; }
+        /* List view */
+        .file-list { display: none; }
+        .file-list.show { display: block; }
+        .file-grid.hide { display: none; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1rem; text-align: left; font-size: 0.85rem; }
+        th { color: var(--muted); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+        tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+        .file-type-badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600; background: rgba(10,147,150,0.2); color: var(--accent); }
+        .action-btn { background: none; border: 1px solid var(--border); color: var(--text); padding: 0.3rem 0.6rem; border-radius: 5px; font-size: 0.75rem; cursor: pointer; transition: all 0.15s; margin-right: 0.3rem; }
+        .action-btn:hover { background: var(--accent); border-color: var(--accent); }
+        .action-btn.danger:hover { background: #dc2626; border-color: #dc2626; }
+        .empty-state { text-align: center; padding: 4rem; color: var(--muted); }
+        .empty-state .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .empty-state h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .empty-state p { font-size: 0.88rem; }
+        .upload-input { display: none; }
+        .loading { text-align: center; padding: 3rem; color: var(--muted); }
+    </style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-logo">📄 WebDocs<span>Document Management</span></div>
+    <nav class="sidebar-nav">
+        <a href="/" class="nav-item">🏠 Dashboard</a>
+        <a href="/files" class="nav-item active">📁 My Files</a>
+        <a href="#" class="nav-item">🤝 Shared with Me</a>
+        <a href="#" class="nav-item">🕐 Recent</a>
+        <a href="#" class="nav-item">⭐ Favorites</a>
+        <div class="nav-section">Folders</div>
+        <div class="folder-item">📂 Marketing</div>
+        <div class="folder-item">📂 Projects</div>
+        <div class="folder-item">📂 Reports</div>
+    </nav>
+    <div class="sidebar-bottom">
+        <a href="/editor" class="new-doc-btn">+ New Document</a>
+        <div class="storage-bar-label">Storage</div>
+        <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBar"></div></div>
+        <div class="storage-text" id="storageText">Loading...</div>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="search-box"><input type="text" placeholder="Search files..." id="searchInput" oninput="filterFiles()"/></div>
+        <div class="topbar-actions">
+            <button class="notif-btn">🔔</button>
+            <div class="user-chip">
+                <div class="avatar" id="userAvatar">U</div>
+                <div>
+                    <div class="user-name" id="userName" th:text="${currentUser}">User</div>
+                    <a href="/logout" class="logout-link">Sign out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="page-header">
+            <h2>📁 My Files</h2>
+            <div class="header-actions">
+                <button class="toggle-btn active" id="gridBtn" onclick="setView('grid')">⊞</button>
+                <button class="toggle-btn" id="listBtn" onclick="setView('list')">☰</button>
+                <button class="btn btn-outline" onclick="document.getElementById('uploadInput').click()">☁️ Upload</button>
+                <input type="file" id="uploadInput" class="upload-input" multiple onchange="handleUpload(this.files)"/>
+                <a href="/editor" class="btn btn-solid">+ New</a>
+            </div>
+        </div>
+        <div class="breadcrumb"><a href="/">Home</a> / My Files</div>
+
+        <div id="loadingState" class="loading">Loading your files...</div>
+        <div id="emptyState" class="empty-state" style="display:none">
+            <div class="empty-icon">📭</div>
+            <h3>No files yet</h3>
+            <p>Upload files or create a new document to get started.</p>
+        </div>
+
+        <div class="file-grid" id="fileGrid" style="display:none"></div>
+        <div class="file-list" id="fileList" style="display:none">
+            <table>
+                <thead><tr><th>Name</th><th>Modified</th><th>Type</th><th>Size</th><th>Actions</th></tr></thead>
+                <tbody id="fileListBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const currentUser = /*[[${currentUser}]]*/ 'User';
+    let allFiles = [];
+    let viewMode = 'grid';
+
+    document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+
+    function getFileIcon(name) {
+        if (!name) return '📄';
+        const ext = name.split('.').pop().toLowerCase();
+        const icons = { pdf: '📕', doc: '📝', docx: '📝', xls: '📊', xlsx: '📊',
+            jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', mp4: '🎬', mp3: '🎵',
+            zip: '🗜️', html: '🌐', js: '⚙️', css: '🎨', txt: '📃' };
+        return icons[ext] || '📄';
+    }
+
+    function formatSize(bytes) {
+        if (!bytes) return '—';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function formatDate(d) {
+        if (!d) return '—';
+        try { return new Date(d).toLocaleDateString(); } catch { return d; }
+    }
+
+    function setView(mode) {
+        viewMode = mode;
+        document.getElementById('gridBtn').classList.toggle('active', mode === 'grid');
+        document.getElementById('listBtn').classList.toggle('active', mode === 'list');
+        renderFiles(allFiles);
+    }
+
+    function filterFiles() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allFiles.filter(f => (f.name || f.filename || f.key || '').toLowerCase().includes(q));
+        renderFiles(filtered);
+    }
+
+    function renderFiles(files) {
+        const grid = document.getElementById('fileGrid');
+        const listDiv = document.getElementById('fileList');
+        const listBody = document.getElementById('fileListBody');
+        if (files.length === 0) {
+            grid.style.display = 'none';
+            listDiv.style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+            return;
+        }
+        document.getElementById('emptyState').style.display = 'none';
+        if (viewMode === 'grid') {
+            grid.style.display = 'grid';
+            listDiv.style.display = 'none';
+            grid.innerHTML = files.map(f => {
+                const name = f.name || f.filename || f.key || 'Unknown';
+                const id = f.id || f.fileId || '';
+                return `<div class="file-card">
+                    <div class="file-card-icon">${getFileIcon(name)}</div>
+                    <div class="file-card-name" title="${name}">${name}</div>
+                    <div class="file-card-meta">${formatSize(f.size)}</div>
+                    <div class="file-card-meta">${formatDate(f.lastModified || f.updatedAt)}</div>
+                    <div class="file-card-actions">
+                        <button class="icon-btn" title="Download" onclick="downloadFile('${id}')">⬇</button>
+                        <button class="icon-btn danger" title="Delete" onclick="deleteFile('${id}')">🗑</button>
+                    </div>
+                </div>`;
+            }).join('');
+        } else {
+            grid.style.display = 'none';
+            listDiv.style.display = 'block';
+            listBody.innerHTML = files.map(f => {
+                const name = f.name || f.filename || f.key || 'Unknown';
+                const ext = name.split('.').pop().toUpperCase();
+                const id = f.id || f.fileId || '';
+                return `<tr>
+                    <td>${getFileIcon(name)} ${name}</td>
+                    <td>${formatDate(f.lastModified || f.updatedAt)}</td>
+                    <td><span class="file-type-badge">${ext}</span></td>
+                    <td>${formatSize(f.size)}</td>
+                    <td>
+                        <button class="action-btn" onclick="downloadFile('${id}')">⬇ Download</button>
+                        <button class="action-btn danger" onclick="deleteFile('${id}')">🗑 Delete</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+    }
+
+    function downloadFile(fileId) {
+        if (!fileId) return;
+        fetch('/api/storage/files/' + fileId + '/download')
+            .then(r => r.json())
+            .then(data => { if (data.url) window.open(data.url, '_blank'); })
+            .catch(console.error);
+    }
+
+    function deleteFile(fileId) {
+        if (!fileId || !confirm('Delete this file?')) return;
+        fetch('/api/storage/files/' + fileId, { method: 'DELETE' })
+            .then(() => loadFiles())
+            .catch(console.error);
+    }
+
+    function handleUpload(files) {
+        if (!files || files.length === 0) return;
+        Array.from(files).forEach(file => {
+            const body = { filename: file.name, contentType: file.type, username: currentUser };
+            fetch('/api/storage/presigned-url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(r => r.json())
+            .then(data => {
+                const uploadUrl = data.url || data.uploadUrl || data.presignedUrl;
+                if (uploadUrl) {
+                    return fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+                }
+            })
+            .then(() => loadFiles())
+            .catch(e => alert('Upload failed: ' + e.message));
+        });
+    }
+
+    function loadFiles() {
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('fileGrid').style.display = 'none';
+        fetch('/api/storage/files?username=' + encodeURIComponent(currentUser))
+            .then(r => r.json())
+            .then(files => {
+                allFiles = Array.isArray(files) ? files : [];
+                document.getElementById('loadingState').style.display = 'none';
+                renderFiles(allFiles);
+            })
+            .catch(() => {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+            });
+    }
+
+    function loadStorageStats() {
+        fetch('/api/storage/stats?username=' + encodeURIComponent(currentUser))
+            .then(r => r.json())
+            .then(data => {
+                const used = data.usedBytes || data.used || 0;
+                const total = data.totalBytes || data.total || 10737418240;
+                const pct = Math.min((used / total) * 100, 100).toFixed(1);
+                document.getElementById('storageBar').style.width = pct + '%';
+                document.getElementById('storageText').textContent =
+                    formatSize(used) + ' of ' + formatSize(total);
+            })
+            .catch(() => {
+                document.getElementById('storageText').textContent = 'Storage info unavailable';
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadFiles();
+        loadStorageStats();
+    });
+</script>
+</body>
+</html>

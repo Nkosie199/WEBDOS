@@ -1,105 +1,568 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${appName} + ' Dashboard'">WebDocs Dashboard</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>WebDocs — Dashboard</title>
     <style>
+        :root {
+            --bg: #0d1b2a;
+            --sidebar: #006d77;
+            --accent: #0a9396;
+            --text: #e0f7f4;
+            --card: #122535;
+            --border: #1e3a4a;
+            --muted: #89b4c0;
+            --sidebar-w: 250px;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1b2a; color: #e0f7f4; min-height: 100vh; }
-        header { background: linear-gradient(135deg, #006d77, #0a9396); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        header .logo { font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; color: #e9f5f5; }
-        header .logo span { color: #83c5be; }
-        nav a { color: #caf0f8; text-decoration: none; margin-left: 1.5rem; font-size: 0.95rem; transition: color 0.2s; }
-        nav a:hover { color: #fff; }
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
-        h2 { font-size: 1.4rem; margin-bottom: 1.2rem; color: #83c5be; border-bottom: 1px solid #1a3a4a; padding-bottom: 0.5rem; }
-        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-bottom: 2.5rem; }
-        .card { background: #122535; border: 1px solid #1e3a4a; border-radius: 10px; padding: 1.4rem; transition: transform 0.2s, box-shadow 0.2s; }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,109,119,0.4); }
-        .card h3 { font-size: 1rem; color: #83c5be; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
-        .card p { font-size: 0.85rem; color: #aac; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
-        .badge-up { background: #0a9396; color: #e9f5f5; }
-        .badge-unknown { background: #555; color: #ccc; }
-        .generate-form { background: #122535; border: 1px solid #1e3a4a; border-radius: 10px; padding: 2rem; margin-bottom: 2.5rem; }
-        .generate-form label { display: block; margin-bottom: 0.5rem; color: #83c5be; font-weight: 600; }
-        .generate-form input[type=text] { width: 100%; padding: 0.7rem 1rem; background: #0d1b2a; border: 1px solid #1e3a4a; border-radius: 6px; color: #e0f7f4; font-size: 1rem; margin-bottom: 1rem; }
-        .generate-form input[type=text]:focus { outline: none; border-color: #0a9396; }
-        .btn { background: #0a9396; color: white; border: none; padding: 0.7rem 1.8rem; border-radius: 6px; font-size: 1rem; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-block; }
-        .btn:hover { background: #006d77; }
-        .links { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
-        footer { background: #091520; text-align: center; padding: 1.2rem; font-size: 0.8rem; color: #445; border-top: 1px solid #1e3a4a; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; display: flex; min-height: 100vh; }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 100;
+        }
+        .sidebar-logo {
+            padding: 1.5rem 1.2rem 1rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-logo span { opacity: 0.6; font-size: 0.7rem; display: block; font-weight: 400; letter-spacing: 0; }
+        .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 1.2rem;
+            cursor: pointer;
+            border-radius: 0;
+            transition: background 0.15s;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 0.92rem;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.1); }
+        .nav-item.active { background: rgba(255,255,255,0.18); font-weight: 600; }
+        .nav-section {
+            padding: 1rem 1.2rem 0.4rem;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+        }
+        .folder-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 1.2rem 0.5rem 1.8rem;
+            cursor: pointer;
+            font-size: 0.88rem;
+            opacity: 0.85;
+            transition: background 0.15s;
+        }
+        .folder-item:hover { background: rgba(255,255,255,0.1); }
+        .sidebar-bottom {
+            padding: 1rem 1.2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .new-doc-btn {
+            display: block;
+            width: 100%;
+            padding: 0.7rem;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: var(--text);
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+            margin-bottom: 1rem;
+        }
+        .new-doc-btn:hover { background: rgba(255,255,255,0.25); }
+        .storage-bar-label {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-bottom: 0.4rem;
+        }
+        .storage-bar-track {
+            height: 6px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .storage-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 1s ease;
+        }
+        .storage-text { font-size: 0.72rem; opacity: 0.6; margin-top: 0.3rem; }
+
+        /* MAIN */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* TOPBAR */
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.8rem;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .search-box {
+            flex: 1;
+            max-width: 380px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 0.55rem 1rem 0.55rem 2.4rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text);
+            font-size: 0.88rem;
+            outline: none;
+        }
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 0.7rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 1rem; margin-left: auto; }
+        .notif-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: relative;
+        }
+        .notif-badge {
+            position: absolute;
+            top: -4px; right: -4px;
+            background: #f28b82;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+        }
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        .avatar {
+            width: 32px; height: 32px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .user-name { font-size: 0.88rem; font-weight: 500; }
+        .logout-link { font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+        .logout-link:hover { color: var(--text); }
+
+        /* CONTENT */
+        .content { padding: 1.8rem; flex: 1; }
+
+        /* WELCOME BANNER */
+        .welcome-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .welcome-banner h2 { font-size: 1.5rem; font-weight: 700; }
+        .welcome-banner p { color: var(--muted); font-size: 0.88rem; margin-top: 0.2rem; }
+        .banner-actions { display: flex; gap: 0.75rem; }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        .btn-outline:hover { background: var(--accent); color: var(--text); }
+        .btn-solid { background: var(--sidebar); color: var(--text); }
+        .btn-solid:hover { background: var(--accent); }
+
+        /* SECTION TITLE */
+        .section-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; }
+
+        /* RECENT DOCS */
+        .recent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .doc-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .doc-card:hover { border-color: var(--accent); }
+        .doc-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .doc-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .doc-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+        /* ANALYTICS */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 900px) { .analytics-grid { grid-template-columns: 1fr; } }
+        .analytics-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem;
+        }
+        .analytics-card h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; color: var(--muted); }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 100px;
+        }
+        .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .bar {
+            width: 100%;
+            background: var(--accent);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: height 0.5s ease;
+        }
+        .bar-label { font-size: 0.65rem; color: var(--muted); }
+        .stat-cards { display: flex; flex-direction: column; gap: 0.75rem; }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+        }
+        .stat-label { font-size: 0.75rem; color: var(--muted); }
+        .stat-value { font-size: 1.6rem; font-weight: 700; margin: 0.2rem 0; }
+        .stat-change { font-size: 0.75rem; color: #4ade80; }
+        .stat-change.negative { color: #f28b82; }
+
+        /* FILES TABLE */
+        .table-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .table-header h3 { font-size: 0.95rem; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1.2rem; text-align: left; font-size: 0.85rem; }
+        th { color: var(--muted); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+        tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+        .file-type-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: rgba(10,147,150,0.2);
+            color: var(--accent);
+        }
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-right: 0.3rem;
+        }
+        .action-btn:hover { background: var(--accent); border-color: var(--accent); }
+        .action-btn.danger:hover { background: #dc2626; border-color: #dc2626; }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--muted);
+        }
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 0.75rem; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="logo">Web<span>Docs</span></div>
-    <nav>
-        <a th:href="${swaggerUrl}">Swagger UI</a>
-        <a th:href="${myngerUrl}" target="_blank">Mynger API</a>
-        <a th:href="${deepdiaryUrl}" target="_blank">DeepDiary API</a>
-        <a href="/api/webdocs/health">Health</a>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        📄 WebDocs
+        <span>Document Management</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/" class="nav-item active">🏠 Dashboard</a>
+        <a href="/files" class="nav-item">📁 My Files</a>
+        <a href="#" class="nav-item">🤝 Shared with Me</a>
+        <a href="#" class="nav-item">🕐 Recent</a>
+        <a href="#" class="nav-item">⭐ Favorites</a>
+        <div class="nav-section">Folders</div>
+        <div class="folder-item">📂 Marketing</div>
+        <div class="folder-item">📂 Projects</div>
+        <div class="folder-item">📂 Reports</div>
     </nav>
-</header>
+    <div class="sidebar-bottom">
+        <a href="/editor" class="new-doc-btn">+ New Document</a>
+        <div class="storage-bar-label">Storage</div>
+        <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBar"></div></div>
+        <div class="storage-text" id="storageText">Loading...</div>
+    </div>
+</aside>
 
-<div class="container">
+<!-- MAIN -->
+<div class="main">
+    <header class="topbar">
+        <div class="search-box">
+            <input type="text" placeholder="Search documents..."/>
+        </div>
+        <div class="topbar-actions">
+            <button class="notif-btn" title="Notifications">🔔<span class="notif-badge"></span></button>
+            <div class="user-chip">
+                <div class="avatar" id="userAvatar">U</div>
+                <div>
+                    <div class="user-name" id="userName" th:text="${currentUser}">User</div>
+                    <a href="/logout" class="logout-link">Sign out</a>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    <h2>🔌 Service Status</h2>
-    <div class="cards">
-        <div class="card">
-            <h3>🌐 Mynger API <span class="badge badge-unknown">PROXY</span></h3>
-            <p th:text="${myngerUrl}">http://api.mynger.com</p>
+    <div class="content">
+        <!-- WELCOME -->
+        <div class="welcome-banner">
+            <div>
+                <h2>Welcome back, <span id="welcomeName" th:text="${currentUser}">User</span>! 👋</h2>
+                <p>Here's what's happening with your documents today.</p>
+            </div>
+            <div class="banner-actions">
+                <button class="btn btn-outline" onclick="window.location='/files'">☁️ Upload File</button>
+                <button class="btn btn-solid" onclick="window.location='/editor'">+ New Document</button>
+            </div>
         </div>
-        <div class="card">
-            <h3>📋 DeepDiary API <span class="badge badge-unknown">PROXY</span></h3>
-            <p th:text="${deepdiaryUrl}">http://api.deepdiary.mynger.com</p>
+
+        <!-- RECENT DOCS -->
+        <div class="section-title">Recent Documents</div>
+        <div class="recent-grid" id="recentDocs">
+            <div class="doc-card"><div class="doc-icon">⏳</div><div class="doc-name">Loading...</div></div>
         </div>
-        <div class="card">
-            <h3>⚙️ Site Generator <span class="badge badge-up">UP</span></h3>
-            <p>Static site generation from local directory</p>
+
+        <!-- ANALYTICS -->
+        <div class="analytics-grid">
+            <div class="analytics-card">
+                <h3>Activity — Last 7 Days</h3>
+                <div class="bar-chart" id="barChart">
+                    <div class="bar-group"><div class="bar" style="height:40%"></div><div class="bar-label">Mon</div></div>
+                    <div class="bar-group"><div class="bar" style="height:65%"></div><div class="bar-label">Tue</div></div>
+                    <div class="bar-group"><div class="bar" style="height:30%"></div><div class="bar-label">Wed</div></div>
+                    <div class="bar-group"><div class="bar" style="height:80%"></div><div class="bar-label">Thu</div></div>
+                    <div class="bar-group"><div class="bar" style="height:55%"></div><div class="bar-label">Fri</div></div>
+                    <div class="bar-group"><div class="bar" style="height:90%"></div><div class="bar-label">Sat</div></div>
+                    <div class="bar-group"><div class="bar" style="height:45%"></div><div class="bar-label">Sun</div></div>
+                </div>
+            </div>
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-label">Total Files</div>
+                    <div class="stat-value" id="totalFiles">—</div>
+                    <div class="stat-change">↑ This month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Views</div>
+                    <div class="stat-value">—</div>
+                    <div class="stat-change">+18% vs last week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Shared</div>
+                    <div class="stat-value">—</div>
+                    <div class="stat-change">↑ Active shares</div>
+                </div>
+            </div>
         </div>
-        <div class="card">
-            <h3>📖 Swagger UI <span class="badge badge-up">UP</span></h3>
-            <p><a th:href="${swaggerUrl}" style="color:#83c5be;">Open API documentation →</a></p>
+
+        <!-- ALL DOCS TABLE -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3>All Documents</h3>
+                <button class="btn btn-outline" onclick="window.location='/files'">View All →</button>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Modified</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Owner</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="fileTableBody">
+                <tr><td colspan="6" class="empty-state"><div class="empty-icon">📭</div><div>Loading files...</div></td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <h2>🏗️ Generate Static Site</h2>
-    <div class="generate-form">
-        <form action="/api/webdocs/generate" method="post">
-            <label for="path">Directory Path</label>
-            <input type="text" id="path" name="path" placeholder="e.g. C:/Users/Photos or /home/user/documents" />
-            <button type="submit" class="btn">⚡ Generate Site ZIP</button>
-        </form>
-        <p style="margin-top:1rem; font-size:0.85rem; color:#556;">
-            Note: The server will walk the given directory and return a downloadable ZIP of the generated static site.
-        </p>
-    </div>
-
-    <h2>🔗 Quick Links</h2>
-    <div class="links">
-        <a class="btn" th:href="${swaggerUrl}">📖 Swagger UI</a>
-        <a class="btn" href="/api/webdocs/health">❤️ Health Check</a>
-        <a class="btn" href="/api/webdocs/templates">📄 List Templates</a>
-        <a class="btn" href="/v3/api-docs">🔧 OpenAPI JSON</a>
-    </div>
-
-    <h2>ℹ️ About</h2>
-    <div class="card">
-        <h3>WebDocs <span class="badge badge-up" th:text="'v' + ${version}">v1.0.0</span></h3>
-        <p style="margin-top:0.5rem;">
-            WebDocs is a Spring Boot application that combines static website generation with a unified API gateway
-            for the Mynger and DeepDiary platforms.
-        </p>
-    </div>
-
 </div>
 
-<footer>
-    &copy; 2024 WebDocs · Built with Spring Boot 3 &amp; ❤️
-</footer>
+<script th:inline="javascript">
+    const currentUser = /*[[${currentUser}]]*/ 'User';
+    const authToken = /*[[${authToken}]]*/ '';
 
+    // Avatar initial
+    document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+
+    function getFileIcon(name) {
+        if (!name) return '📄';
+        const ext = name.split('.').pop().toLowerCase();
+        const icons = { pdf: '📕', doc: '📝', docx: '📝', xls: '📊', xlsx: '📊', ppt: '📊', pptx: '📊',
+            jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', mp4: '🎬', mp3: '🎵', zip: '🗜️', html: '🌐', js: '⚙️', css: '🎨' };
+        return icons[ext] || '📄';
+    }
+
+    function formatSize(bytes) {
+        if (!bytes) return '—';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '—';
+        try { return new Date(dateStr).toLocaleDateString(); } catch { return dateStr; }
+    }
+
+    function renderRecentDocs(files) {
+        const el = document.getElementById('recentDocs');
+        const recent = (Array.isArray(files) ? files : []).slice(0, 4);
+        if (recent.length === 0) {
+            el.innerHTML = '<div class="doc-card"><div class="doc-icon">📭</div><div class="doc-name">No recent files</div></div>';
+            return;
+        }
+        el.innerHTML = recent.map(f => `
+            <div class="doc-card">
+                <div class="doc-icon">${getFileIcon(f.name || f.filename || f.key)}</div>
+                <div class="doc-name">${f.name || f.filename || f.key || 'Unknown'}</div>
+                <div class="doc-meta">${formatDate(f.lastModified || f.updatedAt)} · ${formatSize(f.size)}</div>
+            </div>`).join('');
+    }
+
+    function renderFileTable(files) {
+        const tbody = document.getElementById('fileTableBody');
+        const arr = Array.isArray(files) ? files : [];
+        document.getElementById('totalFiles').textContent = arr.length;
+        if (arr.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><div>No documents found</div></div></td></tr>';
+            return;
+        }
+        tbody.innerHTML = arr.map(f => {
+            const name = f.name || f.filename || f.key || 'Unknown';
+            const ext = name.split('.').pop().toUpperCase();
+            return `<tr>
+                <td>${getFileIcon(name)} ${name}</td>
+                <td>${formatDate(f.lastModified || f.updatedAt)}</td>
+                <td><span class="file-type-badge">${ext}</span></td>
+                <td>${formatSize(f.size)}</td>
+                <td>${f.owner || currentUser}</td>
+                <td>
+                    <button class="action-btn" onclick="downloadFile('${f.id || f.fileId || ''}')">⬇ Download</button>
+                    <button class="action-btn danger" onclick="deleteFile('${f.id || f.fileId || ''}')">🗑 Delete</button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderEmptyState() {
+        document.getElementById('recentDocs').innerHTML = '<div class="doc-card"><div class="doc-icon">📭</div><div class="doc-name">No files yet</div></div>';
+        document.getElementById('fileTableBody').innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><div>No files found</div></div></td></tr>';
+    }
+
+    function downloadFile(fileId) {
+        if (!fileId) return;
+        fetch('/api/storage/files/' + fileId + '/download')
+            .then(r => r.json())
+            .then(data => { if (data.url) window.open(data.url, '_blank'); })
+            .catch(console.error);
+    }
+
+    function deleteFile(fileId) {
+        if (!fileId || !confirm('Delete this file?')) return;
+        fetch('/api/storage/files/' + fileId, { method: 'DELETE' })
+            .then(() => loadFiles())
+            .catch(console.error);
+    }
+
+    function loadFiles() {
+        fetch('/api/storage/files?username=' + encodeURIComponent(currentUser))
+            .then(r => r.json())
+            .then(files => {
+                renderRecentDocs(files);
+                renderFileTable(files);
+            })
+            .catch(() => renderEmptyState());
+    }
+
+    function loadStorageStats() {
+        fetch('/api/storage/stats?username=' + encodeURIComponent(currentUser))
+            .then(r => r.json())
+            .then(data => {
+                const used = data.usedBytes || data.used || 0;
+                const total = data.totalBytes || data.total || 10737418240;
+                const pct = Math.min((used / total) * 100, 100).toFixed(1);
+                document.getElementById('storageBar').style.width = pct + '%';
+                document.getElementById('storageText').textContent =
+                    formatSize(used) + ' of ' + formatSize(total);
+            })
+            .catch(() => {
+                document.getElementById('storageText').textContent = 'Storage info unavailable';
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadFiles();
+        loadStorageStats();
+    });
+</script>
 </body>
 </html>

@@ -56,6 +56,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Spring Session (in-memory) -->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-core</artifactId>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

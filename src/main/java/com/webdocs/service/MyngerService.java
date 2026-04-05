@@ -121,6 +121,32 @@ public class MyngerService {
         return post("/api/files/presigned-url", body, authHeader);
     }
 
+    // ---- Storage (S3) ----
+
+    public Mono<Object> listFiles(String username, String authHeader) {
+        return get("/api/storage/files?username=" + username, authHeader);
+    }
+
+    public Mono<Object> getFile(String fileId, String authHeader) {
+        return get("/api/storage/files/" + fileId, authHeader);
+    }
+
+    public Mono<Object> deleteFile(String fileId, String authHeader) {
+        return delete("/api/storage/files/" + fileId, authHeader);
+    }
+
+    public Mono<Object> getDownloadUrl(String fileId, String authHeader) {
+        return get("/api/storage/files/" + fileId + "/download", authHeader);
+    }
+
+    public Mono<Object> getStorageStats(String username, String authHeader) {
+        return get("/api/storage/stats?username=" + username, authHeader);
+    }
+
+    public Mono<Object> getPresignedUploadUrl(Object body, String authHeader) {
+        return post("/api/storage/presigned-url", body, authHeader);
+    }
+
     // ---- Camel / misc ----
 
     public Mono<Object> sendToCamel(Object body, String authHeader) {

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>WebDocs — Code Editor</title>
+    <!-- CodeMirror 5 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <style>
+        :root {
+            --bg: #0d1b2a; --sidebar: #006d77; --accent: #0a9396;
+            --text: #e0f7f4; --card: #122535; --border: #1e3a4a;
+            --muted: #89b4c0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* TOPBAR */
+        .topbar {
+            display: flex; align-items: center; gap: 1rem; padding: 0.7rem 1.5rem;
+            background: var(--card); border-bottom: 1px solid var(--border);
+            flex-shrink: 0; z-index: 50;
+        }
+        .brand-link { font-size: 1.1rem; font-weight: 700; color: var(--accent); text-decoration: none; letter-spacing: 1px; }
+        .search-box { flex: 1; max-width: 320px; position: relative; }
+        .search-box input { width: 100%; padding: 0.45rem 1rem 0.45rem 2.2rem; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; color: var(--text); font-size: 0.85rem; outline: none; }
+        .search-box::before { content: '🔍'; position: absolute; left: 0.65rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; }
+        .topbar-actions { display: flex; align-items: center; gap: 1rem; margin-left: auto; }
+        .notif-btn { background: none; border: none; color: var(--text); font-size: 1.1rem; cursor: pointer; }
+        .user-chip { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+        .avatar { width: 28px; height: 28px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; }
+        .user-name { font-size: 0.85rem; font-weight: 500; }
+        .logout-link { font-size: 0.75rem; color: var(--muted); text-decoration: none; }
+        .logout-link:hover { color: var(--text); }
+
+        /* MODE TABS */
+        .mode-tabs {
+            display: flex; align-items: center; gap: 0;
+            background: var(--card); border-bottom: 1px solid var(--border);
+            padding: 0 1.5rem; flex-shrink: 0;
+        }
+        .mode-tab {
+            padding: 0.65rem 1.2rem; font-size: 0.85rem; font-weight: 500;
+            cursor: pointer; border-bottom: 2px solid transparent;
+            color: var(--muted); transition: all 0.15s;
+        }
+        .mode-tab:hover { color: var(--text); }
+        .mode-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+        .mode-tab.add { color: var(--muted); font-style: italic; }
+        .new-page-btn {
+            margin-left: auto; padding: 0.45rem 1rem; background: var(--sidebar);
+            color: var(--text); border: none; border-radius: 6px; font-size: 0.82rem;
+            font-weight: 600; cursor: pointer; transition: background 0.2s;
+        }
+        .new-page-btn:hover { background: var(--accent); }
+
+        /* EDITOR TOOLBAR */
+        .editor-toolbar {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 1.5rem; background: #0f1e2e; border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .toolbar-btn {
+            padding: 0.35rem 0.85rem; background: var(--card); border: 1px solid var(--border);
+            color: var(--text); border-radius: 5px; font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
+        }
+        .toolbar-btn:hover { background: var(--accent); border-color: var(--accent); }
+        .toolbar-btn.primary { background: var(--sidebar); border-color: var(--sidebar); }
+        .toolbar-btn.primary:hover { background: var(--accent); }
+        .lang-select {
+            padding: 0.35rem 0.6rem; background: var(--card); border: 1px solid var(--border);
+            color: var(--text); border-radius: 5px; font-size: 0.8rem; cursor: pointer; outline: none;
+        }
+        .toolbar-sep { width: 1px; height: 20px; background: var(--border); margin: 0 0.3rem; }
+        .filename-input {
+            padding: 0.35rem 0.7rem; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 5px; color: var(--text); font-size: 0.8rem; outline: none; width: 160px;
+        }
+        .filename-input:focus { border-color: var(--accent); }
+        .save-status { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+        .save-status.saved { color: #4ade80; }
+        .save-status.error { color: #f28b82; }
+
+        /* SPLIT PANE */
+        .split-pane {
+            display: flex; flex: 1; overflow: hidden;
+        }
+        .editor-pane {
+            flex: 0 0 55%; display: flex; flex-direction: column;
+            border-right: 2px solid var(--border);
+        }
+        .preview-pane { flex: 1; display: flex; flex-direction: column; }
+        .pane-header {
+            padding: 0.4rem 1rem; background: #0f1e2e; border-bottom: 1px solid var(--border);
+            font-size: 0.78rem; font-weight: 600; color: var(--muted); flex-shrink: 0;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .pane-header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        .CodeMirror {
+            flex: 1; height: 100% !important; font-size: 13px; font-family: 'Fira Code', 'Cascadia Code', monospace;
+        }
+        .cm-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .cm-wrap .CodeMirror { flex: 1; }
+        #previewFrame { flex: 1; border: none; background: #fff; }
+
+        /* BOTTOM PANEL */
+        .bottom-panel {
+            height: 220px; flex-shrink: 0; border-top: 2px solid var(--border);
+            background: var(--card); display: flex; overflow: hidden;
+        }
+        .file-explorer-left {
+            width: 220px; flex-shrink: 0; border-right: 1px solid var(--border);
+            padding: 0.75rem; overflow-y: auto;
+        }
+        .file-explorer-left h4 { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tree-item {
+            font-size: 0.82rem; padding: 0.3rem 0.5rem; cursor: pointer; border-radius: 4px;
+            transition: background 0.1s;
+        }
+        .tree-item:hover { background: rgba(255,255,255,0.07); }
+        .tree-item.dir { font-weight: 600; }
+        .tree-child { padding-left: 1.2rem; }
+        .file-explorer-right { flex: 1; display: flex; flex-direction: column; }
+        .explorer-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); flex-shrink: 0;
+        }
+        .explorer-header h4 { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .explorer-table { flex: 1; overflow-y: auto; }
+        .explorer-table table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+        .explorer-table th { padding: 0.4rem 0.75rem; color: var(--muted); font-weight: 500; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: #0f1e2e; }
+        .explorer-table td { padding: 0.4rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .explorer-table tr:hover td { background: rgba(255,255,255,0.03); }
+        .mini-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.68rem; cursor: pointer; }
+        .mini-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--text); }
+        .storage-mini { padding: 0.4rem 0.75rem; font-size: 0.72rem; color: var(--muted); border-top: 1px solid var(--border); }
+        .storage-mini-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 0.3rem; overflow: hidden; }
+        .storage-mini-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 1s; }
+    </style>
+</head>
+<body>
+<!-- TOPBAR -->
+<header class="topbar">
+    <a href="/" class="brand-link">📄 WebDocs</a>
+    <div class="toolbar-sep"></div>
+    <div class="search-box"><input type="text" placeholder="Search..."/></div>
+    <div class="topbar-actions">
+        <button class="notif-btn">🔔</button>
+        <div class="user-chip">
+            <div class="avatar" id="userAvatar">U</div>
+            <div>
+                <div class="user-name" id="userName" th:text="${currentUser}">User</div>
+                <a href="/logout" class="logout-link">Sign out</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- MODE TABS -->
+<div class="mode-tabs">
+    <div class="mode-tab active">💻 Coding Mode</div>
+    <div class="mode-tab">🖊 Drawing Mode</div>
+    <div class="mode-tab">🎨 Design Mode</div>
+    <div class="mode-tab add">+ Add Mode</div>
+    <button class="new-page-btn" onclick="newFile()">+ New Page</button>
+</div>
+
+<!-- EDITOR TOOLBAR -->
+<div class="editor-toolbar">
+    <select class="lang-select" id="langSelect" onchange="setLanguage(this.value)">
+        <option value="htmlmixed">HTML</option>
+        <option value="css">CSS</option>
+        <option value="javascript">JavaScript</option>
+    </select>
+    <div class="toolbar-sep"></div>
+    <input type="text" class="filename-input" id="filenameInput" value="index.html" placeholder="filename"/>
+    <div class="toolbar-sep"></div>
+    <button class="toolbar-btn primary" onclick="saveFile()">💾 Save</button>
+    <button class="toolbar-btn" onclick="updatePreview()">▶ Preview</button>
+    <button class="toolbar-btn" onclick="downloadFile()">⬇ Download</button>
+    <button class="toolbar-btn" onclick="clearEditor()">✕ Clear</button>
+    <span class="save-status" id="saveStatus"></span>
+</div>
+
+<!-- SPLIT PANE -->
+<div class="split-pane">
+    <div class="editor-pane">
+        <div class="pane-header"><div class="dot"></div> Editor</div>
+        <div class="cm-wrap">
+            <textarea id="codeEditor"></textarea>
+        </div>
+    </div>
+    <div class="preview-pane">
+        <div class="pane-header"><div class="dot"></div> Preview</div>
+        <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+</div>
+
+<!-- BOTTOM PANEL: File Explorer -->
+<div class="bottom-panel">
+    <div class="file-explorer-left">
+        <h4>📂 Explorer</h4>
+        <div class="tree-item dir">📁 My Documents</div>
+        <div class="tree-item tree-child">📁 Coding Projects</div>
+        <div class="tree-item tree-child" style="padding-left:2.4rem">📁 Web Templates</div>
+        <div class="tree-item tree-child">📁 Reports</div>
+        <div class="tree-item dir" style="margin-top:0.5rem">📁 Shared</div>
+    </div>
+    <div class="file-explorer-right">
+        <div class="explorer-header">
+            <h4>📄 Files</h4>
+            <button class="mini-btn" onclick="document.getElementById('uploadInput2').click()">☁ Upload</button>
+            <input type="file" id="uploadInput2" style="display:none" onchange="handleUploadFromExplorer(this.files)"/>
+        </div>
+        <div class="explorer-table">
+            <table>
+                <thead><tr><th>Name</th><th>Modified</th><th>Type</th><th>Size</th><th>Action</th></tr></thead>
+                <tbody id="explorerTableBody">
+                <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1rem;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="storage-mini">
+            <span id="storageMiniText">Loading storage...</span>
+            <div class="storage-mini-bar"><div class="storage-mini-fill" id="storageMiniBar"></div></div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const currentUser = /*[[${currentUser}]]*/ 'User';
+
+    document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+
+    // Init CodeMirror
+    const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+        lineNumbers: true,
+        theme: 'dracula',
+        mode: 'htmlmixed',
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: false,
+        autoCloseBrackets: true,
+        extraKeys: {
+            'Ctrl-Enter': updatePreview,
+            'Cmd-Enter': updatePreview,
+            'Ctrl-S': saveFile,
+            'Cmd-S': saveFile
+        }
+    });
+
+    // Starter template
+    const starterTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Page</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f0f4f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 { color: #006d77; }
+    p { color: #555; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hello, World! 👋</h1>
+    <p>Start editing to build your page.</p>
+  </div>
+</body>
+</html>`;
+
+    editor.setValue(starterTemplate);
+    setTimeout(updatePreview, 500);
+
+    function setLanguage(mode) {
+        editor.setOption('mode', mode);
+        const ext = mode === 'htmlmixed' ? '.html' : mode === 'javascript' ? '.js' : '.css';
+        const fname = document.getElementById('filenameInput').value;
+        const base = fname.replace(/\.[^.]+$/, '');
+        document.getElementById('filenameInput').value = base + ext;
+    }
+
+    function updatePreview() {
+        const content = editor.getValue();
+        const mode = editor.getOption('mode');
+        let html = content;
+        if (mode === 'css') {
+            html = `<html><head><style>${content}</style></head><body><div style="padding:1rem;font-family:sans-serif"><p>CSS Preview — add HTML to see styled content</p></div></body></html>`;
+        } else if (mode === 'javascript') {
+            html = `<html><head></head><body><pre style="font-family:monospace;padding:1rem;font-size:12px">JavaScript loaded. Check console.</pre><script>${content}<\/script></body></html>`;
+        }
+        const iframe = document.getElementById('previewFrame');
+        iframe.srcdoc = html;
+    }
+
+    function saveFile() {
+        const content = editor.getValue();
+        const filename = document.getElementById('filenameInput').value || 'untitled.html';
+        const statusEl = document.getElementById('saveStatus');
+        statusEl.textContent = 'Saving...';
+        statusEl.className = 'save-status';
+        fetch('/editor/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, filename })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'saved') {
+                statusEl.textContent = '✓ Saved to ' + (data.path || filename);
+                statusEl.className = 'save-status saved';
+            } else {
+                statusEl.textContent = '✗ Save failed';
+                statusEl.className = 'save-status error';
+            }
+            setTimeout(() => { statusEl.textContent = ''; }, 3000);
+        })
+        .catch(e => {
+            statusEl.textContent = '✗ Error: ' + e.message;
+            statusEl.className = 'save-status error';
+        });
+    }
+
+    function downloadFile() {
+        const content = editor.getValue();
+        const filename = document.getElementById('filenameInput').value || 'untitled.html';
+        const blob = new Blob([content], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    function clearEditor() {
+        if (confirm('Clear the editor? This cannot be undone.')) {
+            editor.setValue('');
+            document.getElementById('previewFrame').srcdoc = '';
+        }
+    }
+
+    function newFile() {
+        if (confirm('Start a new file?')) {
+            editor.setValue(starterTemplate);
+            document.getElementById('filenameInput').value = 'untitled.html';
+            document.getElementById('langSelect').value = 'htmlmixed';
+            editor.setOption('mode', 'htmlmixed');
+            updatePreview();
+        }
+    }
+
+    function handleUploadFromExplorer(files) {
+        if (!files || files.length === 0) return;
+        Array.from(files).forEach(file => {
+            fetch('/api/storage/presigned-url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: file.name, contentType: file.type, username: currentUser })
+            })
+            .then(r => r.json())
+            .then(data => {
+                const url = data.url || data.uploadUrl || data.presignedUrl;
+                if (url) return fetch(url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+            })
+            .then(() => loadExplorerFiles())
+            .catch(e => alert('Upload failed: ' + e.message));
+        });
+    }
+
+    function getFileIcon(name) {
+        if (!name) return '📄';
+        const ext = name.split('.').pop().toLowerCase();
+        const icons = { pdf: '📕', doc: '📝', docx: '📝', html: '🌐', js: '⚙️', css: '🎨', txt: '📃', jpg: '🖼️', png: '🖼️' };
+        return icons[ext] || '📄';
+    }
+
+    function formatSize(bytes) {
+        if (!bytes) return '—';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function formatDate(d) {
+        if (!d) return '—';
+        try { return new Date(d).toLocaleDateString(); } catch { return d; }
+    }
+
+    function loadExplorerFiles() {
+        fetch('/api/storage/files?username=' + encodeURIComponent(currentUser))
+            .then(r => r.json())
+            .then(files => {
+                const tbody = document.getElementById('explorerTableBody');
+                const arr = Array.isArray(files) ? files : [];
+                if (arr.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">No files</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = arr.slice(0, 10).map(f => {
+                    const name = f.name || f.filename || f.key || 'Unknown';
+                    const id = f.id || f.fileId || '';
+                    return `<tr>
+                        <td>${getFileIcon(name)} ${name}</td>
+                        <td>${formatDate(f.lastModified || f.updatedAt)}</td>
+                        <td>${name.split('.').pop().toUpperCase()}</td>
+                        <td>${formatSize(f.size)}</td>
+                        <td><button class="mini-btn" onclick="openInEditor('${id}', '${name}')">Open</button></td>
+                    </tr>`;
+                }).join('');
+            })
+            .catch(() => {
+                document.getElementById('explorerTableBody').innerHTML =
+                    '<tr><td colspan="5" style="text-align:center;color:var(--muted)">Unavailable</td></tr>';
+            });
+    }
+
+    function openInEditor(fileId, filename) {
+        // Attempt to download and open in editor
+        if (!fileId) return;
+        fetch('/api/storage/files/' + fileId + '/download')
+            .then(r => r.json())
+            .then(data => {
+                const url = data.url;
+                if (url) return fetch(url);
+            })
+            .then(r => r && r.text())
+            .then(content => {
+                if (content) {
+                    editor.setValue(content);
+                    document.getElementById('filenameInput').value = filename;
+                    updatePreview();
+                }
+            })
+            .catch(e => alert('Could not open file: ' + e.message));
+    }
+
+    function loadStorageMini() {
+        fetch('/api/storage/stats?username=' + encodeURIComponent(currentUser))
+            .then(r => r.json())
+            .then(data => {
+                const used = data.usedBytes || data.used || 0;
+                const total = data.totalBytes || data.total || 10737418240;
+                const pct = Math.min((used / total) * 100, 100).toFixed(1);
+                document.getElementById('storageMiniBar').style.width = pct + '%';
+                document.getElementById('storageMiniText').textContent =
+                    formatSize(used) + ' of ' + formatSize(total) + ' used';
+            })
+            .catch(() => {
+                document.getElementById('storageMiniText').textContent = 'Storage info unavailable';
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadExplorerFiles();
+        loadStorageMini();
+    });
+</script>
+</body>
+</html>

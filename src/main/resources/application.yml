@@ -6,6 +6,8 @@ spring:
     name: webdocs
   thymeleaf:
     cache: false
+  session:
+    store-type: none
 
 webdocs:
   mynger-api-url: http://api.mynger.com

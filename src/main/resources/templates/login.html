@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>WebDocs — Sign In</title>
+    <style>
+        :root {
+            --bg: #0d1b2a;
+            --sidebar: #006d77;
+            --accent: #0a9396;
+            --text: #e0f7f4;
+            --card: #122535;
+            --border: #1e3a4a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 2rem;
+        }
+        .brand {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .brand h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 2px;
+        }
+        .brand p {
+            color: #89b4c0;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+        }
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1.8rem;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #89b4c0;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus {
+            border-color: var(--accent);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 0.85rem;
+            background: var(--sidebar);
+            color: var(--text);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+        }
+        .btn-primary:hover { background: var(--accent); }
+        .error-msg {
+            background: rgba(220, 53, 69, 0.15);
+            border: 1px solid rgba(220, 53, 69, 0.4);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #f28b82;
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+        }
+        .signup-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #89b4c0;
+        }
+        .signup-link a { color: var(--accent); text-decoration: none; }
+        .signup-link a:hover { text-decoration: underline; }
+        .lock-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="login-wrapper">
+    <div class="brand">
+        <div class="lock-icon">📄</div>
+        <h1>WebDocs</h1>
+        <p>Document Management Platform</p>
+    </div>
+    <div class="card">
+        <h2>Sign In</h2>
+        <div class="error-msg" th:if="${error}" th:text="${error}"></div>
+        <form method="POST" action="/login">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="you@example.com" required autofocus/>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required/>
+            </div>
+            <button type="submit" class="btn-primary">Sign In</button>
+        </form>
+    </div>
+    <p class="signup-link">Don't have an account? <a href="#">Contact your administrator</a></p>
+</div>
+</body>
+</html>
