@@ -23,29 +23,108 @@ WebDocs extends the original WEBDOS static site generator (a NetBeans Java proje
 
 ## 🚀 Prerequisites
 
-- **Java 17+**
-- **Maven 3.8+** (or use the bundled NetBeans Maven at `C:\Program Files\NetBeans-23\netbeans\java\maven\bin\mvn`)
-- Internet access to reach `api.mynger.com` and `api.deepdiary.mynger.com` (optional — app runs offline too)
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| **Java JDK** | 17+ | Installed at `C:\Program Files\Java\jdk-23` |
+| **Maven** | 3.8+ | Installed at `C:\Users\Administrator\.m2\wrapper\dists\apache-maven-3.8.6-bin\...\apache-maven-3.8.6\bin\mvn` |
+| **Git** | any | `C:\Program Files\Git\bin\git.exe` |
+
+> 💡 **Tip:** The easiest way to run this is through **IntelliJ IDEA** or **NetBeans** which will auto-detect Maven and Java for you.
 
 ---
 
-## ⚡ Quick Start
+## ⚡ How to Run
 
-```bash
-# Clone / navigate to project
-cd "/path/to/WEBDOS"
+### Option 1 — IntelliJ IDEA (Recommended)
 
-# Build (skip tests for fast start)
-mvn clean package -DskipTests
+1. Open IntelliJ IDEA
+2. **File → Open** → select the `WEBDOS` folder
+3. IntelliJ will auto-detect it as a Maven project and import dependencies
+4. Open `src/main/java/com/webdocs/WebDocsApplication.java`
+5. Click the **▶ green Run button** next to `main()`
+6. Wait for: `Started WebDocsApplication on port 8080`
 
-# Run
-java -jar target/webdocs-1.0.0.jar
+### Option 2 — NetBeans
+
+1. Open NetBeans
+2. **File → Open Project** → select the `WEBDOS` folder
+3. NetBeans detects the `pom.xml` and loads it as a Maven project
+4. Right-click the project → **Run** (or press F6)
+5. NetBeans will run `mvn spring-boot:run` automatically
+
+### Option 3 — Command Line (Windows CMD)
+
+```cmd
+:: Set Java home (adjust path if your JDK version differs)
+set JAVA_HOME=C:\Program Files\Java\jdk-23
+set PATH=%JAVA_HOME%\bin;%PATH%
+
+:: Set Maven path
+set MVN=C:\Users\Administrator\.m2\wrapper\dists\apache-maven-3.8.6-bin\1ks0nkde5v1pk9vtc31i9d0lcd\apache-maven-3.8.6\bin\mvn
+
+:: Navigate to project
+cd C:\Users\Administrator\Documents\CodingProjects\WEBDOS
+
+:: Build (skip tests for fast start)
+%MVN% clean package -DskipTests
+
+:: Run
+java -jar target\webdocs-1.0.0.jar
 ```
 
-Then open:
-- **Dashboard:** http://localhost:8080/
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **Health:** http://localhost:8080/api/webdocs/health
+### Option 4 — Command Line (PowerShell)
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-23"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+$mvn = "C:\Users\Administrator\.m2\wrapper\dists\apache-maven-3.8.6-bin\1ks0nkde5v1pk9vtc31i9d0lcd\apache-maven-3.8.6\bin\mvn.cmd"
+
+cd "C:\Users\Administrator\Documents\CodingProjects\WEBDOS"
+
+# Build
+& $mvn clean package -DskipTests
+
+# Run
+java -jar target\webdocs-1.0.0.jar
+```
+
+### Option 5 — Run directly with Maven (no build step)
+
+```powershell
+& $mvn spring-boot:run
+```
+
+---
+
+## 🌐 Access the Application
+
+Once running, open your browser:
+
+| URL | Description |
+|-----|-------------|
+| http://localhost:8080/ | Main dashboard |
+| http://localhost:8080/swagger-ui.html | Interactive API docs |
+| http://localhost:8080/api/webdocs/health | Health check |
+| http://localhost:8080/v3/api-docs | Raw OpenAPI JSON |
+
+---
+
+## 🧪 Running Tests
+
+```powershell
+& $mvn test
+```
+
+Expected output:
+```
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
+Test classes:
+- `SiteGeneratorServiceTest` — integration tests with real temp directories
+- `MyngerServiceTest` — uses MockWebServer to test Mynger API proxying
+- `DeepDiaryServiceTest` — uses MockWebServer to test DeepDiary API proxying
 
 ---
 
@@ -177,19 +256,6 @@ springdoc:
 │  └──────────────┘ └───────────────┘ └────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
-
----
-
-## 🧪 Running Tests
-
-```bash
-mvn test
-```
-
-Test classes:
-- `SiteGeneratorServiceTest` — integration tests with real temp directories
-- `MyngerServiceTest` — uses MockWebServer to test Mynger API proxying
-- `DeepDiaryServiceTest` — uses MockWebServer to test DeepDiary API proxying
 
 ---
 
