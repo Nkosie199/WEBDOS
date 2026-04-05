@@ -1,6 +1,6 @@
 # 🌐 WebDocs
 
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.3-brightgreen?logo=spring)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.5-brightgreen?logo=spring)
 ![Java](https://img.shields.io/badge/Java-23-blue?logo=java)
 ![Maven](https://img.shields.io/badge/Maven-Build-orange?logo=apachemaven)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
