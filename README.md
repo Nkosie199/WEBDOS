@@ -86,10 +86,10 @@ Once running, open your browser:
 
 | URL | Description |
 |-----|-------------|
-| http://localhost:8080/ | Main dashboard |
-| http://localhost:8080/swagger-ui.html | Interactive API docs |
-| http://localhost:8080/api/webdocs/health | Health check |
-| http://localhost:8080/v3/api-docs | Raw OpenAPI JSON |
+| http://localhost:5555/ | Main dashboard |
+| http://localhost:5555/swagger-ui.html | Interactive API docs |
+| http://localhost:5555/api/webdocs/health | Health check |
+| http://localhost:5555/v3/api-docs | Raw OpenAPI JSON |
 
 ---
 
@@ -206,7 +206,7 @@ Test classes:
 
 ```yaml
 server:
-  port: 8080
+  port: 5555
 
 webdocs:
   mynger-api-url: http://api.mynger.com
@@ -224,7 +224,7 @@ springdoc:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     WebDocs (port 8080)                     │
+│                     WebDocs (port 5555)                     │
 │                                                             │
 │  ┌─────────────┐   ┌──────────────┐   ┌─────────────────┐  │
 │  │  Dashboard  │   │  Swagger UI  │   │  REST API       │  │
