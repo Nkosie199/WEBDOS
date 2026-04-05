@@ -33,14 +33,17 @@ public class SecurityConfig {
                         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
                         "img-src 'self' data: https:; " +
                         "connect-src 'self' https://api.mynger.com https://api.deepdiary.mynger.com; " +
-                        "frame-src 'self'; " +
+                        "frame-src 'self' https:; " +
                         "object-src 'none';"
                     )
                 )
                 .referrerPolicy(referrer -> referrer
                     .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
                 )
-                .frameOptions(frame -> frame.sameOrigin())
+                // Disable X-Frame-Options header so the app can be embedded
+                // when accessed through Cloudflare tunnel or iframes.
+                // CSP frame-ancestors provides the modern equivalent.
+                .frameOptions(frame -> frame.disable())
             )
 
             // ── CSRF: on for UI forms, off for REST/Swagger paths ──────────
