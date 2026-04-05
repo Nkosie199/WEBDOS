@@ -121,30 +121,51 @@ public class MyngerService {
         return post("/api/files/presigned-url", body, authHeader);
     }
 
-    // ---- Storage (S3) ----
+    // ---- Storage (S3) — endpoints use {userId} as path variable ----
 
-    public Mono<Object> listFiles(String username, String authHeader) {
-        return get("/api/storage/files?username=" + username, authHeader);
+    /** GET /api/storage/files/{userId} — list all files for a user */
+    public Mono<Object> listFiles(String userId, String authHeader) {
+        return get("/api/storage/files/" + userId, authHeader);
     }
 
-    public Mono<Object> getFile(String fileId, String authHeader) {
-        return get("/api/storage/files/" + fileId, authHeader);
+    /** GET /api/storage/recent/{userId}?limit=N — recent files */
+    public Mono<Object> getRecentFiles(String userId, int limit, String authHeader) {
+        return get("/api/storage/recent/" + userId + "?limit=" + limit, authHeader);
     }
 
-    public Mono<Object> deleteFile(String fileId, String authHeader) {
-        return delete("/api/storage/files/" + fileId, authHeader);
+    /** GET /api/storage/dashboard/{userId} — full dashboard data (DashboardData) */
+    public Mono<Object> getDashboardData(String userId, String authHeader) {
+        return get("/api/storage/dashboard/" + userId, authHeader);
     }
 
-    public Mono<Object> getDownloadUrl(String fileId, String authHeader) {
-        return get("/api/storage/files/" + fileId + "/download", authHeader);
+    /** GET /api/storage/count/{userId} — total file count */
+    public Mono<Object> getFileCount(String userId, String authHeader) {
+        return get("/api/storage/count/" + userId, authHeader);
     }
 
-    public Mono<Object> getStorageStats(String username, String authHeader) {
-        return get("/api/storage/stats?username=" + username, authHeader);
+    /** GET /api/storage/size/{userId} — total used size in MB */
+    public Mono<Object> getTotalSize(String userId, String authHeader) {
+        return get("/api/storage/size/" + userId, authHeader);
     }
 
+    /** GET /api/storage/limit/{userId} — storage limit in MB */
+    public Mono<Object> getStorageLimit(String userId, String authHeader) {
+        return get("/api/storage/limit/" + userId, authHeader);
+    }
+
+    /** GET /api/storage/analytics/{userId} — uploads per day map */
+    public Mono<Object> getAnalytics(String userId, String authHeader) {
+        return get("/api/storage/analytics/" + userId, authHeader);
+    }
+
+    /** GET /api/storage/types/{userId} — file type breakdown map */
+    public Mono<Object> getFileTypes(String userId, String authHeader) {
+        return get("/api/storage/types/" + userId, authHeader);
+    }
+
+    /** POST /api/files/presigned-url — get presigned S3 upload URL */
     public Mono<Object> getPresignedUploadUrl(Object body, String authHeader) {
-        return post("/api/storage/presigned-url", body, authHeader);
+        return post("/api/files/presigned-url", body, authHeader);
     }
 
     // ---- Camel / misc ----

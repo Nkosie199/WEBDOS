@@ -128,8 +128,8 @@
         <div class="error-msg" th:if="${error}" th:text="${error}"></div>
         <form method="POST" action="/login">
             <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" placeholder="you@example.com" required autofocus/>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="your username" required autofocus autocomplete="username"/>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>

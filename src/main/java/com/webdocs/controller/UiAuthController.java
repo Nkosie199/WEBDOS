@@ -30,26 +30,30 @@ public class UiAuthController {
     }
 
     @PostMapping("/login")
-    public String doLogin(@RequestParam String email,
+    public String doLogin(@RequestParam String username,
                           @RequestParam String password,
                           HttpSession session,
                           Model model) {
         try {
-            Map<String, Object> body = Map.of("email", email, "password", password);
+            // Mynger SignInRequestDto uses 'username' + 'password'
+            Map<String, Object> body = Map.of("username", username, "password", password);
             Object response = myngerService.signIn(body, null).block();
 
             String token = null;
-            String username = email;
+            String resolvedUsername = username;
 
             if (response instanceof Map<?, ?> responseMap) {
+                // Try common token field names
                 Object tokenObj = responseMap.get("token");
                 if (tokenObj == null) tokenObj = responseMap.get("accessToken");
                 if (tokenObj == null) tokenObj = responseMap.get("access_token");
+                if (tokenObj == null) tokenObj = responseMap.get("idToken");
                 if (tokenObj != null) token = tokenObj.toString();
 
+                // Try to get canonical username from response
                 Object userObj = responseMap.get("username");
                 if (userObj == null) userObj = responseMap.get("email");
-                if (userObj != null) username = userObj.toString();
+                if (userObj != null) resolvedUsername = userObj.toString();
             }
 
             if (token == null) {
@@ -58,7 +62,7 @@ public class UiAuthController {
             }
 
             session.setAttribute("authToken", "Bearer " + token);
-            session.setAttribute("currentUser", username);
+            session.setAttribute("currentUser", resolvedUsername);
             return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("error", "Login failed: " + e.getMessage());

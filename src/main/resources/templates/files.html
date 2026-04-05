@@ -243,12 +243,10 @@
         }
     }
 
-    function downloadFile(fileId) {
-        if (!fileId) return;
-        fetch('/api/storage/files/' + fileId + '/download')
-            .then(r => r.json())
-            .then(data => { if (data.url) window.open(data.url, '_blank'); })
-            .catch(console.error);
+    // FileMetadata.url is the direct S3 URL — just open it
+    function downloadFile(fileUrl) {
+        if (!fileUrl) { alert('No download URL available for this file.'); return; }
+        window.open(fileUrl, '_blank');
     }
 
     function deleteFile(fileId) {
@@ -261,7 +259,7 @@
     function handleUpload(files) {
         if (!files || files.length === 0) return;
         Array.from(files).forEach(file => {
-            const body = { filename: file.name, contentType: file.type, username: currentUser };
+            const body = { filename: file.name, contentType: file.type, userId: currentUser };
             fetch('/api/storage/presigned-url', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -279,10 +277,12 @@
         });
     }
 
+    // Real Mynger API: GET /api/storage/files/{userId} — returns FileMetadata[]
+    // FileMetadata: { key, fileName, type, sizeBytes, sizeMB, lastModified, owner, url }
     function loadFiles() {
         document.getElementById('loadingState').style.display = 'block';
         document.getElementById('fileGrid').style.display = 'none';
-        fetch('/api/storage/files?username=' + encodeURIComponent(currentUser))
+        fetch('/api/storage/files?userId=' + encodeURIComponent(currentUser))
             .then(r => r.json())
             .then(files => {
                 allFiles = Array.isArray(files) ? files : [];
@@ -295,16 +295,17 @@
             });
     }
 
+    // Real Mynger API: GET /api/storage/dashboard/{userId} for storage stats
     function loadStorageStats() {
-        fetch('/api/storage/stats?username=' + encodeURIComponent(currentUser))
+        fetch('/api/storage/dashboard?userId=' + encodeURIComponent(currentUser))
             .then(r => r.json())
             .then(data => {
-                const used = data.usedBytes || data.used || 0;
-                const total = data.totalBytes || data.total || 10737418240;
-                const pct = Math.min((used / total) * 100, 100).toFixed(1);
+                const usedMB = data.totalSizeMB || 0;
+                const limitMB = data.storageLimitMB || 10240;
+                const pct = Math.min((usedMB / limitMB) * 100, 100).toFixed(1);
                 document.getElementById('storageBar').style.width = pct + '%';
                 document.getElementById('storageText').textContent =
-                    formatSize(used) + ' of ' + formatSize(total);
+                    usedMB.toFixed(1) + ' MB of ' + limitMB.toFixed(0) + ' MB';
             })
             .catch(() => {
                 document.getElementById('storageText').textContent = 'Storage info unavailable';

@@ -529,39 +529,66 @@
     function deleteFile(fileId) {
         if (!fileId || !confirm('Delete this file?')) return;
         fetch('/api/storage/files/' + fileId, { method: 'DELETE' })
-            .then(() => loadFiles())
+            .then(() => loadDashboard())
             .catch(console.error);
     }
 
-    function loadFiles() {
-        fetch('/api/storage/files?username=' + encodeURIComponent(currentUser))
-            .then(r => r.json())
-            .then(files => {
-                renderRecentDocs(files);
-                renderFileTable(files);
-            })
-            .catch(() => renderEmptyState());
-    }
-
-    function loadStorageStats() {
-        fetch('/api/storage/stats?username=' + encodeURIComponent(currentUser))
+    // Use the real Mynger /api/storage/dashboard/{userId} — returns DashboardData:
+    // { recentFiles, totalFiles, totalSizeMB, storageLimitMB, uploadsLast7Days }
+    function loadDashboard() {
+        fetch('/api/storage/dashboard?userId=' + encodeURIComponent(currentUser))
             .then(r => r.json())
             .then(data => {
-                const used = data.usedBytes || data.used || 0;
-                const total = data.totalBytes || data.total || 10737418240;
-                const pct = Math.min((used / total) * 100, 100).toFixed(1);
-                document.getElementById('storageBar').style.width = pct + '%';
-                document.getElementById('storageText').textContent =
-                    formatSize(used) + ' of ' + formatSize(total);
+                // Files
+                const files = data.recentFiles || [];
+                renderRecentDocs(files);
+                renderFileTable(files);
+
+                // Stats cards
+                const totalFilesEl = document.getElementById('statTotalFiles');
+                if (totalFilesEl) totalFilesEl.textContent = data.totalFiles || files.length;
+
+                // Storage bar (totalSizeMB / storageLimitMB)
+                const usedMB = data.totalSizeMB || 0;
+                const limitMB = data.storageLimitMB || 10240;
+                const pct = Math.min((usedMB / limitMB) * 100, 100).toFixed(1);
+                const storageBar = document.getElementById('storageBar');
+                const storageText = document.getElementById('storageText');
+                if (storageBar) storageBar.style.width = pct + '%';
+                if (storageText) storageText.textContent =
+                    usedMB.toFixed(1) + ' MB of ' + limitMB.toFixed(0) + ' MB';
+
+                // Analytics bar chart (uploadsLast7Days: { "2024-04-01": 3, ... })
+                const analytics = data.uploadsLast7Days || {};
+                renderAnalyticsChart(analytics);
             })
-            .catch(() => {
-                document.getElementById('storageText').textContent = 'Storage info unavailable';
+            .catch(err => {
+                console.warn('Dashboard data unavailable:', err);
+                renderEmptyState();
+                const storageText = document.getElementById('storageText');
+                if (storageText) storageText.textContent = 'Storage info unavailable';
             });
     }
 
+    function renderAnalyticsChart(analytics) {
+        const chartEl = document.getElementById('analyticsChart');
+        if (!chartEl) return;
+        const entries = Object.entries(analytics).sort((a, b) => a[0].localeCompare(b[0])).slice(-7);
+        if (entries.length === 0) return;
+        const max = Math.max(...entries.map(e => e[1]), 1);
+        chartEl.innerHTML = entries.map(([date, count]) => {
+            const h = Math.max((count / max) * 100, 4).toFixed(0);
+            const label = date.slice(5); // MM-DD
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <span style="font-size:0.7rem;color:#83c5be;">${count}</span>
+                <div style="width:28px;height:${h}px;background:#0a9396;border-radius:4px 4px 0 0;"></div>
+                <span style="font-size:0.65rem;color:#556;">${label}</span>
+            </div>`;
+        }).join('');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        loadFiles();
-        loadStorageStats();
+        loadDashboard();
     });
 </script>
 </body>
