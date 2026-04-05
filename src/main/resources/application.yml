@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: webdocs
+  thymeleaf:
+    cache: false
+
+webdocs:
+  mynger-api-url: http://api.mynger.com
+  deepdiary-api-url: http://api.deepdiary.mynger.com
+  output-dir: ${java.io.tmpdir}/webdocs-output
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha

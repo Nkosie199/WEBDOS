@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${appName} + ' Dashboard'">WebDocs Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0d1b2a; color: #e0f7f4; min-height: 100vh; }
+        header { background: linear-gradient(135deg, #006d77, #0a9396); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+        header .logo { font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; color: #e9f5f5; }
+        header .logo span { color: #83c5be; }
+        nav a { color: #caf0f8; text-decoration: none; margin-left: 1.5rem; font-size: 0.95rem; transition: color 0.2s; }
+        nav a:hover { color: #fff; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+        h2 { font-size: 1.4rem; margin-bottom: 1.2rem; color: #83c5be; border-bottom: 1px solid #1a3a4a; padding-bottom: 0.5rem; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; margin-bottom: 2.5rem; }
+        .card { background: #122535; border: 1px solid #1e3a4a; border-radius: 10px; padding: 1.4rem; transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,109,119,0.4); }
+        .card h3 { font-size: 1rem; color: #83c5be; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .card p { font-size: 0.85rem; color: #aac; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .badge-up { background: #0a9396; color: #e9f5f5; }
+        .badge-unknown { background: #555; color: #ccc; }
+        .generate-form { background: #122535; border: 1px solid #1e3a4a; border-radius: 10px; padding: 2rem; margin-bottom: 2.5rem; }
+        .generate-form label { display: block; margin-bottom: 0.5rem; color: #83c5be; font-weight: 600; }
+        .generate-form input[type=text] { width: 100%; padding: 0.7rem 1rem; background: #0d1b2a; border: 1px solid #1e3a4a; border-radius: 6px; color: #e0f7f4; font-size: 1rem; margin-bottom: 1rem; }
+        .generate-form input[type=text]:focus { outline: none; border-color: #0a9396; }
+        .btn { background: #0a9396; color: white; border: none; padding: 0.7rem 1.8rem; border-radius: 6px; font-size: 1rem; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-block; }
+        .btn:hover { background: #006d77; }
+        .links { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+        footer { background: #091520; text-align: center; padding: 1.2rem; font-size: 0.8rem; color: #445; border-top: 1px solid #1e3a4a; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Web<span>Docs</span></div>
+    <nav>
+        <a th:href="${swaggerUrl}">Swagger UI</a>
+        <a th:href="${myngerUrl}" target="_blank">Mynger API</a>
+        <a th:href="${deepdiaryUrl}" target="_blank">DeepDiary API</a>
+        <a href="/api/webdocs/health">Health</a>
+    </nav>
+</header>
+
+<div class="container">
+
+    <h2>🔌 Service Status</h2>
+    <div class="cards">
+        <div class="card">
+            <h3>🌐 Mynger API <span class="badge badge-unknown">PROXY</span></h3>
+            <p th:text="${myngerUrl}">http://api.mynger.com</p>
+        </div>
+        <div class="card">
+            <h3>📋 DeepDiary API <span class="badge badge-unknown">PROXY</span></h3>
+            <p th:text="${deepdiaryUrl}">http://api.deepdiary.mynger.com</p>
+        </div>
+        <div class="card">
+            <h3>⚙️ Site Generator <span class="badge badge-up">UP</span></h3>
+            <p>Static site generation from local directory</p>
+        </div>
+        <div class="card">
+            <h3>📖 Swagger UI <span class="badge badge-up">UP</span></h3>
+            <p><a th:href="${swaggerUrl}" style="color:#83c5be;">Open API documentation →</a></p>
+        </div>
+    </div>
+
+    <h2>🏗️ Generate Static Site</h2>
+    <div class="generate-form">
+        <form action="/api/webdocs/generate" method="post">
+            <label for="path">Directory Path</label>
+            <input type="text" id="path" name="path" placeholder="e.g. C:/Users/Photos or /home/user/documents" />
+            <button type="submit" class="btn">⚡ Generate Site ZIP</button>
+        </form>
+        <p style="margin-top:1rem; font-size:0.85rem; color:#556;">
+            Note: The server will walk the given directory and return a downloadable ZIP of the generated static site.
+        </p>
+    </div>
+
+    <h2>🔗 Quick Links</h2>
+    <div class="links">
+        <a class="btn" th:href="${swaggerUrl}">📖 Swagger UI</a>
+        <a class="btn" href="/api/webdocs/health">❤️ Health Check</a>
+        <a class="btn" href="/api/webdocs/templates">📄 List Templates</a>
+        <a class="btn" href="/v3/api-docs">🔧 OpenAPI JSON</a>
+    </div>
+
+    <h2>ℹ️ About</h2>
+    <div class="card">
+        <h3>WebDocs <span class="badge badge-up" th:text="'v' + ${version}">v1.0.0</span></h3>
+        <p style="margin-top:0.5rem;">
+            WebDocs is a Spring Boot application that combines static website generation with a unified API gateway
+            for the Mynger and DeepDiary platforms.
+        </p>
+    </div>
+
+</div>
+
+<footer>
+    &copy; 2024 WebDocs · Built with Spring Boot 3 &amp; ❤️
+</footer>
+
+</body>
+</html>
