@@ -168,6 +168,11 @@ public class MyngerService {
         return post("/api/files/presigned-url", body, authHeader);
     }
 
+    /** GET /api/stream/token?userId={userId} — get a stream chat token for a user */
+    public Mono<Object> getStreamToken(String userId) {
+        return get("/api/stream/token?userId=" + userId, null);
+    }
+
     // ---- Camel / misc ----
 
     public Mono<Object> sendToCamel(Object body, String authHeader) {

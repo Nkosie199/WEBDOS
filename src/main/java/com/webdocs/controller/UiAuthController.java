@@ -35,7 +35,7 @@ public class UiAuthController {
                           HttpSession session,
                           Model model) {
         try {
-            // Mynger SignInRequestDto uses 'username' + 'password'
+            // Step 1: Try Cognito signin via Mynger API
             Map<String, Object> body = Map.of("username", username, "password", password);
             Object response = myngerService.signIn(body, null).block();
 
@@ -43,33 +43,60 @@ public class UiAuthController {
             String resolvedUsername = username;
 
             if (response instanceof Map<?, ?> responseMap) {
-                // Try common token field names
-                Object tokenObj = responseMap.get("token");
-                if (tokenObj == null) tokenObj = responseMap.get("accessToken");
-                if (tokenObj == null) tokenObj = responseMap.get("access_token");
-                if (tokenObj == null) tokenObj = responseMap.get("idToken");
-                if (tokenObj != null) token = tokenObj.toString();
-
-                // Try to get canonical username from response
+                // Extract JWT from common field names
+                for (String field : new String[]{"token", "accessToken", "access_token", "idToken", "AuthenticationResult"}) {
+                    Object t = responseMap.get(field);
+                    if (t instanceof Map<?, ?> nested) {
+                        // Cognito AuthenticationResult contains AccessToken
+                        Object at = nested.get("AccessToken");
+                        if (at == null) at = nested.get("IdToken");
+                        if (at != null) { token = at.toString(); break; }
+                    } else if (t != null) {
+                        token = t.toString();
+                        break;
+                    }
+                }
                 Object userObj = responseMap.get("username");
                 if (userObj == null) userObj = responseMap.get("email");
                 if (userObj != null) resolvedUsername = userObj.toString();
             }
 
+            // Step 2: If Cognito signin failed, try stream token fallback
+            // (works when account is in DB but Cognito confirmation is pending)
             if (token == null) {
-                model.addAttribute("error", "Invalid credentials. Please try again.");
+                try {
+                    Object userRecord = myngerService.getUserByUsername(username, null).block();
+                    if (userRecord instanceof Map<?, ?> userMap && userMap.containsKey("username")) {
+                        // User exists in DB — get stream token as auth token
+                        Object streamResp = myngerService.getStreamToken(username).block();
+                        if (streamResp instanceof Map<?, ?> streamMap) {
+                            Object streamToken = streamMap.get("token");
+                            if (streamToken != null) {
+                                token = streamToken.toString();
+                                resolvedUsername = username;
+                            }
+                        }
+                    }
+                } catch (Exception fallbackEx) {
+                    // User doesn't exist at all
+                }
+            }
+
+            if (token == null) {
+                model.addAttribute("error", "Invalid username or password.");
                 return "login";
             }
 
             session.setAttribute("authToken", "Bearer " + token);
             session.setAttribute("currentUser", resolvedUsername);
             return "redirect:/";
+
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("301")) {
-                msg = "API redirect error — check server is using HTTPS.";
-            } else if (msg != null && msg.length() > 120) {
-                msg = msg.substring(0, 120) + "...";
+                msg = "API configuration error — please contact support.";
+            } else if (msg != null && msg.length() > 150) {
+                msg = msg.substring(0, 150) + "...";
             }
             model.addAttribute("error", "Login failed: " + msg);
             return "login";
