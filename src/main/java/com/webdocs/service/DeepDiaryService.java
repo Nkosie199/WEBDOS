@@ -90,6 +90,30 @@ public class DeepDiaryService {
         return post("/api/time", body, authHeader);
     }
 
+    // ---- Money diary ----
+
+    public Mono<Object> getMoney(String username, String authHeader) {
+        String uri = username != null ? "/api/money?username=" + username : "/api/money";
+        return get(uri, authHeader);
+    }
+
+    public Mono<Object> getMoneyByMonth(String username, String yearMonth, String authHeader) {
+        String uri = "/api/money?username=" + username + "&yearMonth=" + yearMonth;
+        return get(uri, authHeader);
+    }
+
+    public Mono<Object> createMoneyEntry(Object body, String authHeader) {
+        return post("/api/money", body, authHeader);
+    }
+
+    public Mono<Object> updateMoneyEntry(String entryId, Object body, String authHeader) {
+        return patch("/api/money/" + entryId, body, authHeader);
+    }
+
+    public Mono<Object> deleteMoneyEntry(String entryId, String authHeader) {
+        return delete("/api/money/" + entryId, authHeader);
+    }
+
     // ---- Notifications ----
 
     public Mono<Object> getNotifications(String authHeader) {

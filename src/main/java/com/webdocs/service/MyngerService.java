@@ -173,6 +173,12 @@ public class MyngerService {
         return get("/api/stream/token?userId=" + userId, null);
     }
 
+    // ---- Transactions ----
+
+    public Mono<Object> getUserTransactions(String username, String authHeader) {
+        return get("/api/transactions?username=" + username, authHeader);
+    }
+
     // ---- Camel / misc ----
 
     public Mono<Object> sendToCamel(Object body, String authHeader) {

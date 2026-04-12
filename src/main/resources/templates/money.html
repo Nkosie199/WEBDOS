@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Money Diary — WebDocs</title>
+    <style>
+        :root {
+            --bg: #0d1b2a;
+            --sidebar: #006d77;
+            --accent: #0a9396;
+            --text: #e0f7f4;
+            --card: #122535;
+            --border: #1e3a4a;
+            --muted: #89b4c0;
+            --sidebar-w: 250px;
+            --income: #4ade80;
+            --expense: #f28b82;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; display: flex; min-height: 100vh; }
+
+        /* SIDEBAR */
+        .sidebar { width: var(--sidebar-w); background: var(--sidebar); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+        .sidebar-logo { padding: 1.5rem 1.2rem 1rem; font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo span { opacity: 0.6; font-size: 0.7rem; display: block; font-weight: 400; letter-spacing: 0; }
+        .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1.2rem; cursor: pointer; text-decoration: none; color: var(--text); font-size: 0.92rem; transition: background 0.15s; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); }
+        .nav-item.active { background: rgba(255,255,255,0.18); font-weight: 600; }
+
+        /* MAIN */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* TOPBAR */
+        .topbar { display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1.8rem; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+        .topbar h1 { font-size: 1.2rem; font-weight: 700; }
+        .topbar-actions { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; }
+        .btn { padding: 0.55rem 1.1rem; border-radius: 8px; font-size: 0.87rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        .btn-outline:hover { background: var(--accent); color: var(--text); }
+        .btn-solid { background: var(--sidebar); color: var(--text); }
+        .btn-solid:hover { background: var(--accent); }
+        .btn-danger { background: rgba(220,38,38,0.15); border: 1px solid #dc2626; color: #f28b82; }
+        .btn-danger:hover { background: #dc2626; color: #fff; }
+
+        /* CONTENT */
+        .content { padding: 1.5rem 1.8rem; flex: 1; }
+
+        /* MONTH TABS */
+        .month-tabs { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.2rem; scrollbar-width: thin; }
+        .month-tab { padding: 0.4rem 0.9rem; border-radius: 20px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.82rem; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+        .month-tab:hover { border-color: var(--accent); color: var(--text); }
+        .month-tab.active { background: var(--accent); border-color: var(--accent); color: var(--text); font-weight: 600; }
+
+        /* SUMMARY CARDS */
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 700px) { .summary-grid { grid-template-columns: 1fr; } }
+        .summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; }
+        .summary-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+        .summary-value { font-size: 1.8rem; font-weight: 700; }
+        .summary-value.income { color: var(--income); }
+        .summary-value.expense { color: var(--expense); }
+        .summary-value.net.positive { color: var(--income); }
+        .summary-value.net.negative { color: var(--expense); }
+
+        /* TABLE */
+        .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+        .table-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 0.5rem; }
+        .table-header h3 { font-size: 0.95rem; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1.2rem; text-align: left; font-size: 0.85rem; }
+        th { color: var(--muted); font-weight: 500; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+        tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+        .type-badge { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+        .type-badge.INCOME { background: rgba(74,222,128,0.15); color: var(--income); }
+        .type-badge.EXPENSE { background: rgba(242,139,130,0.15); color: var(--expense); }
+        .action-btn { background: none; border: 1px solid var(--border); color: var(--text); padding: 0.3rem 0.6rem; border-radius: 5px; font-size: 0.75rem; cursor: pointer; transition: all 0.15s; margin-right: 0.3rem; }
+        .action-btn:hover { background: var(--accent); border-color: var(--accent); }
+        .action-btn.danger:hover { background: #dc2626; border-color: #dc2626; }
+        .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
+        .empty-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 760px; max-height: 90vh; overflow-y: auto; margin: 1rem; }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .modal-header h2 { font-size: 1.05rem; font-weight: 700; }
+        .modal-close { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; }
+        .modal-close:hover { color: var(--text); }
+        .modal-body { padding: 1.5rem; }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.75rem; }
+
+        /* TABS */
+        .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.2rem; }
+        .tab { padding: 0.6rem 1.2rem; cursor: pointer; font-size: 0.88rem; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* FORM */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.35rem; }
+        .form-control { width: 100%; padding: 0.6rem 0.9rem; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-size: 0.88rem; outline: none; }
+        .form-control:focus { border-color: var(--accent); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+
+        /* PREVIEW TABLE */
+        .preview-table-wrap { overflow-x: auto; max-height: 320px; border: 1px solid var(--border); border-radius: 8px; }
+        .preview-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .preview-table th { background: var(--bg); padding: 0.55rem 0.8rem; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); position: sticky; top: 0; }
+        .preview-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+
+        /* IMPORT FORMAT NOTE */
+        .format-note { background: rgba(10,147,150,0.08); border: 1px solid rgba(10,147,150,0.3); border-radius: 8px; padding: 1rem; font-size: 0.82rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.6; }
+        .format-note code { background: rgba(255,255,255,0.07); padding: 0.1em 0.4em; border-radius: 3px; color: var(--text); font-size: 0.8rem; }
+
+        /* LOADER */
+        .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* RESPONSIVE */
+        @media (max-width: 700px) {
+            .main { margin-left: 0; }
+            .sidebar { transform: translateX(-100%); }
+            .topbar { padding: 0.75rem 1rem; }
+            .content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        📄 WebDocs
+        <span>Document Management</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/" class="nav-item">🏠 Dashboard</a>
+        <a href="/files" class="nav-item">📁 My Files</a>
+        <a href="/money" class="nav-item active">💰 Money Diary</a>
+        <a href="#" class="nav-item">🕐 Recent</a>
+        <a href="#" class="nav-item">⭐ Favourites</a>
+    </nav>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+    <header class="topbar">
+        <h1>💰 Money Diary</h1>
+        <div class="topbar-actions">
+            <select id="yearFilter" class="form-control" style="width:auto;padding:0.4rem 0.7rem;font-size:0.85rem" onchange="filterByYear()">
+                <option value="">All Years</option>
+            </select>
+            <button class="btn btn-outline" onclick="openImportModal()">📥 Import</button>
+            <button class="btn btn-solid" onclick="openNewEntryModal()">+ New Entry</button>
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-left:0.5rem">
+                <div style="width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem" id="userAvatar">U</div>
+                <span id="userName" th:text="${currentUser}" style="font-size:0.88rem">User</span>
+                <a href="/logout" style="font-size:0.75rem;color:var(--muted);text-decoration:none;margin-left:0.5rem">Sign out</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+        <!-- MONTH TABS -->
+        <div class="month-tabs" id="monthTabs">
+            <div class="month-tab active" onclick="selectMonth('all')">All Time</div>
+        </div>
+
+        <!-- SUMMARY CARDS -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">💚 Total Income</div>
+                <div class="summary-value income" id="totalIncome">R 0.00</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">🔴 Total Expenses</div>
+                <div class="summary-value expense" id="totalExpense">R 0.00</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">📊 Net Position</div>
+                <div class="summary-value net" id="netPosition">R 0.00</div>
+            </div>
+        </div>
+
+        <!-- TRANSACTIONS TABLE -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3>Transactions <span id="entryCount" style="font-size:0.8rem;color:var(--muted);font-weight:400"></span></h3>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="moneyTableBody">
+                <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">⏳</div><div>Loading...</div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ===== IMPORT MODAL ===== -->
+<div class="modal-overlay" id="importModal" onclick="if(event.target===this)closeImportModal()">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>📥 Import Money Entries</h2>
+            <button class="modal-close" onclick="closeImportModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="tabs">
+                <div class="tab active" onclick="switchImportTab('spreadsheet', this)">📊 Spreadsheet</div>
+                <div class="tab" onclick="switchImportTab('mynger', this)">🔗 From Mynger</div>
+                <div class="tab" onclick="switchImportTab('openbank', this)">🏦 From OpenBank</div>
+            </div>
+
+            <!-- SPREADSHEET TAB -->
+            <div class="tab-content active" id="tab-spreadsheet">
+                <div class="format-note">
+                    <strong>Accepted formats:</strong> ODS, XLSX, XLS, CSV<br>
+                    <strong>Expected columns:</strong> <code>date</code>, <code>description</code>, <code>amount</code>, <code>category</code>, <code>type</code> (optional), <code>notes</code> (optional)<br>
+                    <strong>Date formats:</strong> YYYY-MM-DD, DD MMM YYYY, DD/MM/YYYY<br>
+                    <strong>Type:</strong> INCOME or EXPENSE. If omitted, positive = INCOME, negative = EXPENSE.
+                </div>
+                <div class="form-group">
+                    <label>Choose spreadsheet file</label>
+                    <input type="file" id="spreadsheetFile" accept=".ods,.xlsx,.xls,.csv" class="form-control"/>
+                </div>
+                <button class="btn btn-outline" onclick="previewSpreadsheet()" id="previewBtn">🔍 Parse & Preview</button>
+                <div id="spreadsheetPreview" style="margin-top:1rem"></div>
+            </div>
+
+            <!-- MYNGER TAB -->
+            <div class="tab-content" id="tab-mynger">
+                <p style="color:var(--muted);margin-bottom:1rem;font-size:0.88rem">Fetch your Mynger account transactions and preview them before importing into your money diary.</p>
+                <button class="btn btn-outline" onclick="previewMynger()" id="myngerFetchBtn">🔗 Fetch Mynger Transactions</button>
+                <div id="myngerPreview" style="margin-top:1rem"></div>
+            </div>
+
+            <!-- OPENBANK TAB -->
+            <div class="tab-content" id="tab-openbank">
+                <p style="color:var(--muted);margin-bottom:1rem;font-size:0.88rem">Fetch your OpenBank transactions and preview them before importing into your money diary.</p>
+                <button class="btn btn-outline" onclick="previewOpenBank()" id="openbankFetchBtn">🏦 Fetch OpenBank Transactions</button>
+                <div id="openbankPreview" style="margin-top:1rem"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== EDIT / NEW ENTRY MODAL ===== -->
+<div class="modal-overlay" id="entryModal" onclick="if(event.target===this)closeEntryModal()">
+    <div class="modal" style="max-width:520px">
+        <div class="modal-header">
+            <h2 id="entryModalTitle">💰 New Entry</h2>
+            <button class="modal-close" onclick="closeEntryModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editEntryId"/>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="entryDate" class="form-control"/>
+                </div>
+                <div class="form-group">
+                    <label>Type *</label>
+                    <select id="entryType" class="form-control">
+                        <option value="INCOME">INCOME</option>
+                        <option value="EXPENSE">EXPENSE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description *</label>
+                <input type="text" id="entryDescription" class="form-control" placeholder="e.g. Net salary at EasyPay"/>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Amount (R) *</label>
+                    <input type="number" id="entryAmount" class="form-control" placeholder="0.00" step="0.01" min="0"/>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="entryCategory" class="form-control" placeholder="e.g. Income, Rent, Food"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="entryNotes" class="form-control" rows="2" placeholder="Optional notes"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeEntryModal()">Cancel</button>
+            <button class="btn btn-solid" onclick="saveEntry()">💾 Save</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const currentUser = /*[[${currentUser}]]*/ 'User';
+    const authToken = /*[[${authToken}]]*/ '';
+
+    document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+    document.getElementById('userName').textContent = currentUser;
+
+    let allEntries = [];
+    let currentMonth = 'all';
+    let pendingImportEntries = [];
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+    function fmt(amount) {
+        return 'R ' + Number(amount || 0).toLocaleString('en-ZA', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function authHeaders() {
+        const token = authToken || sessionStorage.getItem('authToken') || '';
+        return token ? {'Authorization': 'Bearer ' + token} : {};
+    }
+
+    function jsonHeaders() {
+        return {...authHeaders(), 'Content-Type': 'application/json'};
+    }
+
+    // ── Load entries ─────────────────────────────────────────────────────
+    async function loadEntries(yearMonth) {
+        const tbody = document.getElementById('moneyTableBody');
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="loading-spinner"></div></div></td></tr>';
+        try {
+            let url = '/api/money?username=' + encodeURIComponent(currentUser);
+            if (yearMonth && yearMonth !== 'all') url += '&yearMonth=' + yearMonth;
+            const res = await fetch(url, {headers: authHeaders()});
+            const data = await res.json();
+            allEntries = Array.isArray(data) ? data : (data.content || data.entries || []);
+            renderTable(allEntries);
+            updateSummary(allEntries);
+            buildMonthTabs(allEntries);
+            updateYearFilter(allEntries);
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">⚠️</div><div>Could not load entries: ' + e.message + '</div></div></td></tr>';
+        }
+    }
+
+    function buildMonthTabs(entries) {
+        const months = new Set();
+        entries.forEach(e => {
+            const d = e.date || e.createdAt || '';
+            if (d.length >= 7) months.add(d.substring(0, 7));
+        });
+        const sorted = Array.from(months).sort().reverse();
+        const container = document.getElementById('monthTabs');
+        container.innerHTML = '<div class="month-tab ' + (currentMonth === 'all' ? 'active' : '') + '" onclick="selectMonth(\'all\')">All Time</div>';
+        sorted.forEach(m => {
+            const label = new Date(m + '-01').toLocaleDateString('en-ZA', {year: 'numeric', month: 'short'});
+            const active = currentMonth === m ? ' active' : '';
+            container.innerHTML += '<div class="month-tab' + active + '" onclick="selectMonth(\'' + m + '\')">' + label + '</div>';
+        });
+    }
+
+    function updateYearFilter(entries) {
+        const years = new Set();
+        entries.forEach(e => {
+            const d = e.date || e.createdAt || '';
+            if (d.length >= 4) years.add(d.substring(0, 4));
+        });
+        const sel = document.getElementById('yearFilter');
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">All Years</option>';
+        Array.from(years).sort().reverse().forEach(y => {
+            sel.innerHTML += '<option value="' + y + '"' + (cur === y ? ' selected' : '') + '>' + y + '</option>';
+        });
+    }
+
+    function filterByYear() {
+        const year = document.getElementById('yearFilter').value;
+        if (!year) {
+            renderTable(allEntries);
+            updateSummary(allEntries);
+        } else {
+            const filtered = allEntries.filter(e => (e.date || '').startsWith(year));
+            renderTable(filtered);
+            updateSummary(filtered);
+        }
+    }
+
+    function selectMonth(month) {
+        currentMonth = month;
+        document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        if (month === 'all') {
+            renderTable(allEntries);
+            updateSummary(allEntries);
+        } else {
+            const filtered = allEntries.filter(e => (e.date || e.createdAt || '').startsWith(month));
+            renderTable(filtered);
+            updateSummary(filtered);
+        }
+    }
+
+    function renderTable(entries) {
+        const tbody = document.getElementById('moneyTableBody');
+        document.getElementById('entryCount').textContent = '(' + entries.length + ' entries)';
+        if (entries.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><div>No entries found</div></div></td></tr>';
+            return;
+        }
+        const sorted = [...entries].sort((a, b) => (b.date || '') > (a.date || '') ? 1 : -1);
+        tbody.innerHTML = sorted.map(e => `
+            <tr>
+                <td>${e.date || '—'}</td>
+                <td>${e.description || '—'}</td>
+                <td>${e.category || '—'}</td>
+                <td style="font-weight:600;color:${e.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">${fmt(e.amount)}</td>
+                <td><span class="type-badge ${e.type || 'EXPENSE'}">${e.type || 'EXPENSE'}</span></td>
+                <td>
+                    <button class="action-btn" onclick='openEditModal(${JSON.stringify(e)})'>✏️ Edit</button>
+                    <button class="action-btn danger" onclick="deleteEntry('${e.id || e._id || ''}')">🗑</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function updateSummary(entries) {
+        let income = 0, expense = 0;
+        entries.forEach(e => {
+            const amt = Number(e.amount || 0);
+            if ((e.type || 'EXPENSE') === 'INCOME') income += amt;
+            else expense += amt;
+        });
+        const net = income - expense;
+        document.getElementById('totalIncome').textContent = fmt(income);
+        document.getElementById('totalExpense').textContent = fmt(expense);
+        const netEl = document.getElementById('netPosition');
+        netEl.textContent = fmt(net);
+        netEl.className = 'summary-value net ' + (net >= 0 ? 'positive' : 'negative');
+    }
+
+    // ── CRUD ─────────────────────────────────────────────────────────────
+    async function deleteEntry(id) {
+        if (!id || !confirm('Delete this entry?')) return;
+        await fetch('/api/money/' + encodeURIComponent(id), {method: 'DELETE', headers: authHeaders()});
+        loadEntries(currentMonth === 'all' ? null : currentMonth);
+    }
+
+    function openNewEntryModal() {
+        document.getElementById('entryModalTitle').textContent = '💰 New Entry';
+        document.getElementById('editEntryId').value = '';
+        document.getElementById('entryDate').value = new Date().toISOString().substring(0, 10);
+        document.getElementById('entryDescription').value = '';
+        document.getElementById('entryAmount').value = '';
+        document.getElementById('entryCategory').value = '';
+        document.getElementById('entryType').value = 'EXPENSE';
+        document.getElementById('entryNotes').value = '';
+        document.getElementById('entryModal').classList.add('open');
+    }
+
+    function openEditModal(entry) {
+        document.getElementById('entryModalTitle').textContent = '✏️ Edit Entry';
+        document.getElementById('editEntryId').value = entry.id || entry._id || '';
+        document.getElementById('entryDate').value = entry.date || '';
+        document.getElementById('entryDescription').value = entry.description || '';
+        document.getElementById('entryAmount').value = entry.amount || '';
+        document.getElementById('entryCategory').value = entry.category || '';
+        document.getElementById('entryType').value = entry.type || 'EXPENSE';
+        document.getElementById('entryNotes').value = entry.notes || '';
+        document.getElementById('entryModal').classList.add('open');
+    }
+
+    function closeEntryModal() {
+        document.getElementById('entryModal').classList.remove('open');
+    }
+
+    async function saveEntry() {
+        const id = document.getElementById('editEntryId').value;
+        const body = {
+            username: currentUser,
+            date: document.getElementById('entryDate').value,
+            description: document.getElementById('entryDescription').value,
+            amount: parseFloat(document.getElementById('entryAmount').value) || 0,
+            category: document.getElementById('entryCategory').value || 'Other',
+            type: document.getElementById('entryType').value,
+            notes: document.getElementById('entryNotes').value
+        };
+        if (!body.description || !body.date) { alert('Date and description are required.'); return; }
+        const method = id ? 'PATCH' : 'POST';
+        const url = id ? '/api/money/' + encodeURIComponent(id) : '/api/money';
+        await fetch(url, {method, headers: jsonHeaders(), body: JSON.stringify(body)});
+        closeEntryModal();
+        loadEntries(currentMonth === 'all' ? null : currentMonth);
+    }
+
+    // ── IMPORT ────────────────────────────────────────────────────────────
+    function openImportModal() {
+        document.getElementById('importModal').classList.add('open');
+    }
+
+    function closeImportModal() {
+        document.getElementById('importModal').classList.remove('open');
+        pendingImportEntries = [];
+    }
+
+    function switchImportTab(name, el) {
+        document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+    }
+
+    async function previewSpreadsheet() {
+        const fileInput = document.getElementById('spreadsheetFile');
+        if (!fileInput.files.length) { alert('Please select a file.'); return; }
+        const btn = document.getElementById('previewBtn');
+        btn.innerHTML = '<span class="loading-spinner"></span> Parsing...';
+        btn.disabled = true;
+        try {
+            const fd = new FormData();
+            fd.append('file', fileInput.files[0]);
+            fd.append('username', currentUser);
+            const res = await fetch('/api/money/import/spreadsheet', {method: 'POST', headers: authHeaders(), body: fd});
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            pendingImportEntries = data.preview || [];
+            renderImportPreview('spreadsheetPreview', pendingImportEntries, 'spreadsheet');
+        } catch (e) {
+            document.getElementById('spreadsheetPreview').innerHTML = '<div style="color:var(--expense);padding:1rem">Error: ' + e.message + '</div>';
+        } finally {
+            btn.innerHTML = '🔍 Parse & Preview';
+            btn.disabled = false;
+        }
+    }
+
+    async function previewMynger() {
+        const btn = document.getElementById('myngerFetchBtn');
+        btn.innerHTML = '<span class="loading-spinner"></span> Fetching...';
+        btn.disabled = true;
+        try {
+            const res = await fetch('/api/money/import/mynger', {method: 'POST', headers: jsonHeaders(), body: '{}'});
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            pendingImportEntries = data.preview || [];
+            renderImportPreview('myngerPreview', pendingImportEntries, 'mynger');
+        } catch (e) {
+            document.getElementById('myngerPreview').innerHTML = '<div style="color:var(--expense);padding:1rem">Error: ' + e.message + '</div>';
+        } finally {
+            btn.innerHTML = '🔗 Fetch Mynger Transactions';
+            btn.disabled = false;
+        }
+    }
+
+    async function previewOpenBank() {
+        const btn = document.getElementById('openbankFetchBtn');
+        btn.innerHTML = '<span class="loading-spinner"></span> Fetching...';
+        btn.disabled = true;
+        try {
+            const res = await fetch('/api/money/import/openbank', {method: 'POST', headers: jsonHeaders(), body: '{}'});
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            pendingImportEntries = data.preview || [];
+            renderImportPreview('openbankPreview', pendingImportEntries, 'openbank');
+        } catch (e) {
+            document.getElementById('openbankPreview').innerHTML = '<div style="color:var(--expense);padding:1rem">Error: ' + e.message + '</div>';
+        } finally {
+            btn.innerHTML = '🏦 Fetch OpenBank Transactions';
+            btn.disabled = false;
+        }
+    }
+
+    function renderImportPreview(containerId, entries, source) {
+        const el = document.getElementById(containerId);
+        if (entries.length === 0) {
+            el.innerHTML = '<p style="color:var(--muted);padding:1rem">No entries found.</p>';
+            return;
+        }
+        el.innerHTML = `
+            <p style="margin-bottom:0.75rem;font-size:0.85rem;color:var(--muted)">Found <strong style="color:var(--text)">${entries.length}</strong> entries. Review and confirm to save.</p>
+            <div class="preview-table-wrap">
+                <table class="preview-table">
+                    <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Type</th></tr></thead>
+                    <tbody>${entries.map(e => `
+                        <tr>
+                            <td>${e.date || '—'}</td>
+                            <td>${e.description || '—'}</td>
+                            <td>${e.category || '—'}</td>
+                            <td style="color:${e.type === 'INCOME' ? 'var(--income)' : 'var(--expense)'}">${fmt(e.amount)}</td>
+                            <td><span class="type-badge ${e.type || 'EXPENSE'}">${e.type || 'EXPENSE'}</span></td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top:1rem;display:flex;gap:0.75rem">
+                <button class="btn btn-solid" onclick="confirmImport()">✅ Confirm & Save All</button>
+                <button class="btn btn-outline" onclick="document.getElementById('${containerId}').innerHTML='';pendingImportEntries=[]">✕ Cancel</button>
+            </div>
+        `;
+    }
+
+    async function confirmImport() {
+        if (!pendingImportEntries.length) return;
+        const res = await fetch('/api/money/import/confirm', {
+            method: 'POST',
+            headers: jsonHeaders(),
+            body: JSON.stringify({entries: pendingImportEntries})
+        });
+        const data = await res.json();
+        alert('Saved ' + data.saved + ' entries. Failed: ' + data.failed);
+        closeImportModal();
+        loadEntries(null);
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        loadEntries(null);
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            closeImportModal();
+            closeEntryModal();
+        }
+    });
+</script>
+</body>
+</html>

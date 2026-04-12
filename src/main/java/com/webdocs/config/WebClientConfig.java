@@ -53,4 +53,13 @@ public class WebClientConfig {
                 .exchangeStrategies(largeBufferStrategies())
                 .build();
     }
+
+    @Bean("openBankClient")
+    public WebClient openBankClient() {
+        return WebClient.builder()
+                .baseUrl("https://openbank-api.mynger.com")
+                .clientConnector(new ReactorClientHttpConnector(httpClient()))
+                .exchangeStrategies(largeBufferStrategies())
+                .build();
+    }
 }
