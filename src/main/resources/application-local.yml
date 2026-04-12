@@ -1,0 +1,23 @@
+# ── Local development profile ─────────────────────────────────────────────────
+# Run with: java -jar webdocs.jar --spring.profiles.active=local
+# Or:       mvn spring-boot:run -Dspring-boot.run.profiles=local
+#
+# Disables SSL so you can hit http://localhost:5555 directly without a cert.
+# Production uses the default profile (SSL on, served via Cloudflare tunnel).
+
+server:
+  port: 5555
+  ssl:
+    enabled: false
+  http2:
+    enabled: false
+  servlet:
+    session:
+      cookie:
+        secure: false      # allow session cookies over plain HTTP locally
+        http-only: true
+        same-site: lax
+
+spring:
+  thymeleaf:
+    cache: false
